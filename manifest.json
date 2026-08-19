@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Aux",
   "version": "0.1.0",
-  "description": "Pass the aux to your AI. Streaming replies play as music, one note for each piece of text as it arrives.",
+  "description": "Streaming AI replies play as music, one note at a time.",
   "permissions": ["storage"],
   "content_scripts": [
     {
