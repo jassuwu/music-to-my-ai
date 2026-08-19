@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Music to My Agents",
+  "version": "0.1.0",
+  "description": "Turns streaming LLM responses into sound — one note per chunk of arriving text.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*", "https://chatgpt.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["samples/*"],
+      "matches": ["https://claude.ai/*", "https://chatgpt.com/*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Music to My Agents"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "toggle-mute": {
+      "suggested_key": { "default": "Ctrl+Shift+M", "mac": "Command+Shift+M" },
+      "description": "Mute or unmute the sonifier"
+    }
+  }
+}
