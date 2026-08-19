@@ -28,3 +28,7 @@ Deliver a concrete recommendation: the approach, the specific sample source, and
 **Deferred, not in v1:** veena (plucked, would fit the one-shot mapping fine, but no bundling-safe licensed source exists — Pianobook's only candidate explicitly forbids redistributing raw samples inside a product) and harmonium (no good source *and* its bellows-driven sustain/drone character is a poor structural fit for one-shot triggering regardless).
 
 Full findings, citations, and verified/inferred distinctions: [../../research/instrument-library.md](../../research/instrument-library.md)
+
+### Later amendment
+
+Pizzicato violin and electric guitar were cut from the roster after listening. The remaining six are kalimba, piano, acoustic guitar, bass, harp and sitar. `scripts/extract-samples.ts` no longer fetches the two dropped patches, and their samples were deleted.
