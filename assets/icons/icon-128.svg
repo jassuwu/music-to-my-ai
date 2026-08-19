@@ -1,6 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect x="0" y="0" width="128" height="128" rx="28" fill="#1D1D1F"/>
-  <ellipse cx="53" cy="90" rx="13" ry="10" fill="#FFFFFF"/>
-  <rect x="59" y="36" width="7" height="54" fill="#FFFFFF"/>
-  <path d="M66 36 c14 6 18 16 12 30 c0 -12 -6 -18 -12 -20 z" fill="#FFFFFF"/>
+  <!-- Sibling, not twin: jass.gg's tab mark is the lime square with his `j`.
+       This tool keeps his system — the invariant lime (#d4fd80), the ink,
+       the square — but carries its own glyph: the 3.5mm aux plug the name
+       comes from. Fills only, no transforms: MSVG drops strokes without
+       explicit opacity and mangles rotate(a cx cy). -->
+  <rect width="128" height="128" fill="#d4fd80"/>
+  <!-- tip -->
+  <path d="M56 44 L56 28 Q56 16 64 16 Q72 16 72 28 L72 44 Z" fill="#0a0a0a"/>
+  <!-- sleeve -->
+  <rect x="56" y="44" width="16" height="34" fill="#0a0a0a"/>
+  <!-- insulator bands: the lime showing through is what says TRS -->
+  <rect x="54.5" y="47" width="19" height="6" fill="#d4fd80"/>
+  <rect x="54.5" y="59" width="19" height="6" fill="#d4fd80"/>
+  <!-- barrel -->
+  <rect x="49" y="78" width="30" height="34" rx="4" fill="#0a0a0a"/>
 </svg>

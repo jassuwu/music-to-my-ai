@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect x="0" y="0" width="32" height="32" rx="7" fill="#1D1D1F"/>
-  <ellipse cx="13.3" cy="22.5" rx="3.4" ry="2.6" fill="#FFFFFF"/>
-  <rect x="14.9" y="9" width="1.9" height="13.5" fill="#FFFFFF"/>
-  <path d="M16.8 9 c3.5 1.5 4.5 4 3 7.5 c0 -3 -1.5 -4.5 -3 -5 z" fill="#FFFFFF"/>
+  <!-- The aux plug in jass.gg's system: sibling of his favicon, not a copy. -->
+  <rect width="32" height="32" fill="#d4fd80"/>
+  <path d="M14 11 L14 7 Q14 4 16 4 Q18 4 18 7 L18 11 Z" fill="#0a0a0a"/>
+  <rect x="14" y="11" width="4" height="8.5" fill="#0a0a0a"/>
+  <rect x="13.6" y="11.8" width="4.8" height="1.6" fill="#d4fd80"/>
+  <rect x="13.6" y="14.8" width="4.8" height="1.6" fill="#d4fd80"/>
+  <rect x="12.2" y="19.5" width="7.6" height="8.5" rx="1" fill="#0a0a0a"/>
 </svg>
