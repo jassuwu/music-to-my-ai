@@ -17,3 +17,11 @@ The popup works and is deliberately simple, but it looks like a settings panel r
 - **Feedback.** One or two small responses that make auditioning an instrument feel alive without competing with the controls.
 
 Research is running in the background; findings land in `research/visual-identity.md`. Resolved when the popup and icons are rebuilt against a chosen direction the user likes.
+
+## Implementation note
+
+Direction taken from [../../research/visual-identity.md](../../research/visual-identity.md): a Pocket Operator panel with one rule borrowed from the TR-808 — the thing currently making sound is lit, everything else is ink on black. Eurorack, tape and tracker references were rejected in the research (patch points and transports this product doesn't have; tracker density collapses back into config-UI at 288px).
+
+Landed: the palette (warm near-black `#0E0E10`, orange `#FF7A1A` reserved for the lit state, green `#5FE3A1` reserved for motion), condensed uppercase silkscreen labels with hairline rules, monospace for numbers/domains/keycap, hardware slide switches instead of iOS toggles, a fader with graduation ticks instead of a styled range input, the voice grid as lit/unlit cells, and the Tine comb mark at four icon sizes plus 18px in the header where it strikes in time with the audition. Motion is guarded by `prefers-reduced-motion`.
+
+Could not be rendered locally for review (no Chromium binary available to drive headlessly); the 16px icon was verified by pixel dump. **Open pending the user's eyes.**
