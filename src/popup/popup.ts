@@ -3,13 +3,14 @@ import { INSTRUMENTS, DEFAULT_INSTRUMENT_ID } from "../instruments";
 import type { InstrumentDefinition } from "../core/types";
 
 /**
- * The control surface is a kalimba you can strike.
+ * The control surface is a halo.
  *
- * The voice picker is not a list of options — it is a comb of six tines, one
- * per instrument, laid out the way a real kalimba is: the longest (lowest)
- * tine in the middle, shorter ones alternating outward. Striking a tine picks
- * that voice and plays it. Everything else on the panel is deliberately small,
- * because the comb is the instrument and the rest is just settings.
+ * The six voices are lights sitting on a ring, placed by register: the
+ * lowest voice at the base of the ring, pitch rising around both sides
+ * to the highest at the zenith. Striking a light picks that voice and
+ * plays it, and the halo ripples. The heart of the ring turns the sound
+ * on and off; muted, the halo goes dark. Everything below the ring is
+ * deliberately quiet.
  */
 
 interface Settings {
@@ -42,31 +43,19 @@ const save = (patch: Partial<Settings>): void => {
 };
 
 /**
- * Tine order and length, arranged like a real kalimba.
+ * Where each voice sits on the ring.
  *
- * Length follows the instrument's register — bass is the longest tine, harp
- * the shortest — and the lowest sits in the centre with the rest alternating
- * outward, which is what gives a kalimba its arch. So the comb is not
- * decoration: it is a picture of the roster's pitch range.
+ * Sorted by register, the lowest voice takes the base of the ring (90° in
+ * screen coordinates) and the rest alternate left and right, climbing both
+ * flanks so that pitch rises toward the zenith. The layout is computed from
+ * the instruments' base notes, so it stays honest if the roster changes.
  */
-function combLayout(): Array<{ inst: InstrumentDefinition; height: number }> {
+function haloLayout(): Array<{ inst: InstrumentDefinition; angleDeg: number }> {
   const byPitch = [...INSTRUMENTS].sort((a, b) => a.base - b.base);
-
-  const arranged: InstrumentDefinition[] = [];
-  byPitch.forEach((inst, i) => {
-    // lowest to the middle, then alternate right and left
-    if (i % 2 === 0) arranged.push(inst);
-    else arranged.unshift(inst);
-  });
-
-  const lowest = byPitch[0]?.base ?? 40;
-  const highest = byPitch[byPitch.length - 1]?.base ?? 72;
-  const span = Math.max(1, highest - lowest);
-
-  return arranged.map((inst) => ({
+  const step = 360 / Math.max(1, byPitch.length);
+  return byPitch.map((inst, i) => ({
     inst,
-    // 100% for the lowest note down to 46% for the highest
-    height: 100 - ((inst.base - lowest) / span) * 54,
+    angleDeg: 90 + (i % 2 === 1 ? 1 : -1) * Math.ceil(i / 2) * step,
   }));
 }
 
@@ -106,52 +95,52 @@ async function audition(inst: InstrumentDefinition): Promise<void> {
 
 /* --- rendering ------------------------------------------------------------ */
 
-function showVoice(inst: InstrumentDefinition, flash: boolean): void {
-  const voice = $("voice");
-  voice.textContent = inst.label;
-  const position = INSTRUMENTS.indexOf(inst) + 1;
-  $("index").textContent =
-    `${String(position).padStart(2, "0")}/${String(INSTRUMENTS.length).padStart(2, "0")}`;
-
-  if (!flash) return;
-  voice.classList.remove("flash");
-  void voice.offsetWidth; // restart the animation
-  voice.classList.add("flash");
+function ripple(): void {
+  const wave = document.createElement("div");
+  wave.className = "ripple";
+  wave.addEventListener("animationend", () => wave.remove());
+  $("sky").append(wave);
 }
 
-function renderComb(): void {
-  const comb = $("comb");
-  comb.replaceChildren(
-    ...combLayout().map(({ inst, height }) => {
-      const tine = document.createElement("button");
-      tine.className = "tine";
-      tine.style.height = `${height}%`;
-      tine.title = inst.label;
-      tine.setAttribute("aria-label", inst.label);
-      tine.setAttribute("aria-pressed", String(inst.id === settings.instrument));
+function showVoice(inst: InstrumentDefinition, struck: boolean): void {
+  const voice = $("voice");
+  voice.textContent = inst.label;
+  if (!struck) return;
+  voice.classList.add("struck");
+  void voice.offsetWidth; // let the hot color land before fading back
+  voice.classList.remove("struck");
+}
 
-      tine.addEventListener("click", () => {
-        save({ instrument: inst.id });
-        for (const other of comb.children) {
-          other.setAttribute(
-            "aria-pressed",
-            String(other === tine),
-          );
-        }
-        tine.classList.remove("struck");
-        void tine.offsetWidth;
-        tine.classList.add("struck");
-        showVoice(inst, true);
-        void audition(inst);
-      });
+const RING_RADIUS = 71; // half the halo's 142px diameter
 
-      // Hovering previews the name without committing to it.
-      tine.addEventListener("pointerenter", () => showVoice(inst, false));
-      tine.addEventListener("pointerleave", () => showVoice(selected(), false));
+function renderHalo(): void {
+  const sky = $("sky");
+  for (const { inst, angleDeg } of haloLayout()) {
+    const orb = document.createElement("button");
+    orb.className = "orb";
+    const a = (angleDeg * Math.PI) / 180;
+    orb.style.left = `calc(50% + ${(RING_RADIUS * Math.cos(a)).toFixed(1)}px)`;
+    orb.style.top = `calc(50% + ${(RING_RADIUS * Math.sin(a)).toFixed(1)}px)`;
+    orb.title = inst.label;
+    orb.setAttribute("aria-label", inst.label);
+    orb.setAttribute("aria-pressed", String(inst.id === settings.instrument));
 
-      return tine;
-    }),
-  );
+    orb.addEventListener("click", () => {
+      save({ instrument: inst.id });
+      for (const other of sky.querySelectorAll(".orb")) {
+        other.setAttribute("aria-pressed", String(other === orb));
+      }
+      ripple();
+      showVoice(inst, true);
+      void audition(inst);
+    });
+
+    // Hovering previews the name without committing to it.
+    orb.addEventListener("pointerenter", () => showVoice(inst, false));
+    orb.addEventListener("pointerleave", () => showVoice(selected(), false));
+
+    sky.append(orb);
+  }
 }
 
 const selected = (): InstrumentDefinition =>
@@ -181,13 +170,15 @@ function renderSites(): void {
 }
 
 function renderPower(): void {
-  $<HTMLInputElement>("power").checked = !settings.muted;
+  $("power").setAttribute("aria-pressed", String(!settings.muted));
   document.body.classList.toggle("off", settings.muted);
 }
 
 function renderVolume(): void {
   const percent = Math.round(settings.volume * 100);
-  $<HTMLInputElement>("volume").value = String(percent);
+  const volume = $<HTMLInputElement>("volume");
+  volume.value = String(percent);
+  volume.style.setProperty("--vol", `${percent}%`);
   $("volume-val").textContent = String(percent);
 }
 
@@ -198,21 +189,24 @@ async function main(): Promise<void> {
 
   renderPower();
   renderVolume();
-  renderComb();
+  renderHalo();
   renderSites();
   showVoice(selected(), false);
+  if (!settings.muted) ripple(); // one slow breath as the panel opens
 
-  $<HTMLInputElement>("power").addEventListener("change", (e) => {
-    save({ muted: !(e.target as HTMLInputElement).checked });
+  $("power").addEventListener("click", () => {
+    save({ muted: !settings.muted });
     renderPower();
+    if (!settings.muted) ripple();
   });
 
   const volume = $<HTMLInputElement>("volume");
   volume.addEventListener("input", () => {
     const value = Number(volume.value) / 100;
     save({ volume: value });
+    volume.style.setProperty("--vol", `${volume.value}%`);
     $("volume-val").textContent = volume.value;
-    // Keep an open audition in step, so dragging the fader is audible.
+    // Keep an open audition in step, so dragging the slider is audible.
     audio?.master.gain.setTargetAtTime(value, audio.ctx.currentTime, 0.02);
   });
 
