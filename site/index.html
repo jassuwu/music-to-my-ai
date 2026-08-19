@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>music to my ai</title>
+    <meta
+      name="description"
+      content="your ai talks, this plays it. one note per chunk of the reply, nothing to configure." />
+    <link rel="icon" href="icons/icon-128.png" />
+    <meta property="og:title" content="music to my ai" />
+    <meta
+      property="og:description"
+      content="your ai talks, this plays it. one note per chunk of the reply, nothing to configure." />
+    <meta property="og:image" content="promo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      /* jass.gg's tokens, the same set the popup runs on. Two neutrals and a
+         quieter one, the invariant lime for marks and fills only, and no
+         border token because nothing here has a border. */
+      :root {
+        color-scheme: light dark;
+        --background: light-dark(oklch(1 0 0), oklch(0.145 0 0));
+        --foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+        --muted-foreground: light-dark(oklch(0.556 0 0), oklch(0.708 0 0));
+        --accent: light-dark(oklch(0.5 0.14 124.39), oklch(0.9392 0.1588 124.39));
+        --accent-mark: #d4fd80;
+        --on-accent: oklch(0.145 0 0);
+
+        /* The site runs three typefaces and this page ships none: a font file
+           is the single biggest thing a page this small could download. So
+           each role falls back to the system's answer — the paper role to a
+           system serif, the machine role to the system mono. The hand role
+           has no substitute and is simply absent, which is why there is no
+           wordmark in it here. */
+        --paper: ui-serif, Georgia, "Iowan Old Style", Times, serif;
+        --machine: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font: 1.125rem/1.7 var(--paper);
+        text-wrap: pretty;
+        accent-color: var(--accent-mark);
+      }
+
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+      header img {
+        width: 44px;
+        height: 44px;
+      }
+      h1 {
+        margin: 0;
+        font: 2rem/1 var(--paper);
+        color: var(--accent);
+        text-transform: lowercase;
+      }
+
+      p {
+        margin: 1.5rem 0 0;
+      }
+
+      /* The demo. No panel, no card, no rule above it — it is separated by
+         space, like every section on jass.gg. */
+      .demo {
+        margin-top: 2.5rem;
+      }
+      .controls {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        font: 0.8125rem/1.5 var(--machine);
+      }
+
+      /* The one filled thing on the page. A fill is a job the invariant lime
+         is allowed to hold, and this is the only control here — pressing it
+         is the whole reason the page exists. Square, because nothing on the
+         site is rounded. */
+      button {
+        font: inherit;
+        text-transform: lowercase;
+        padding: 0.5rem 0.9rem;
+        border: 0;
+        border-radius: 0;
+        background: var(--accent-mark);
+        color: var(--on-accent);
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.55;
+      }
+      select {
+        font: inherit;
+        text-transform: lowercase;
+        color: var(--muted-foreground);
+        background: transparent;
+        border: 0;
+        padding: 0.5rem 0;
+        cursor: pointer;
+      }
+
+      .thread {
+        margin-top: 1.5rem;
+        min-height: 9rem;
+      }
+      .who {
+        display: block;
+        margin-top: 1rem;
+        font: 0.6875rem/1.4 var(--machine);
+        color: var(--muted-foreground);
+        text-transform: lowercase;
+      }
+      .said {
+        margin: 0.25rem 0 0;
+      }
+
+      /* The caret is the only motion on the page, and it runs only while a
+         reply is arriving — the same rule the extension follows with sound. */
+      .typing::after {
+        content: "";
+        display: inline-block;
+        width: 0.5em;
+        height: 1.05em;
+        margin-left: 0.08em;
+        vertical-align: -0.15em;
+        background: var(--accent-mark);
+        animation: blink 1s steps(1) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .typing::after {
+          animation: none;
+        }
+      }
+
+      ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 1rem;
+        margin: 2.5rem 0 0;
+        padding: 0;
+        list-style: none;
+        font: 0.8125rem/1.5 var(--machine);
+        color: var(--muted-foreground);
+        text-transform: lowercase;
+      }
+
+      /* Links carry nothing at rest and the underline DRAWS on hover, in from
+         the left and back out the way it came. Lifted from jass.gg, where it
+         is the site's entire link affordance. */
+      a {
+        color: inherit;
+        text-decoration: none;
+        background-image: linear-gradient(var(--accent-mark), var(--accent-mark));
+        background-repeat: no-repeat;
+        background-position: 0 100%;
+        background-size: 0 2px;
+        transition: background-size 140ms ease-out;
+      }
+      a:hover {
+        background-size: 100% 2px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        a {
+          transition: none;
+        }
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent-mark);
+        outline-offset: 3px;
+      }
+      ::selection {
+        background-color: var(--accent-mark);
+        color: var(--on-accent);
+      }
+
+      footer {
+        margin-top: 3rem;
+        font: 0.6875rem/1.4 var(--machine);
+        color: var(--muted-foreground);
+        text-transform: lowercase;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- hi. it's one html file and 60 lines of demo. -->
+    <main>
+      <header>
+        <img src="icons/icon-128.png" alt="" />
+        <h1>music to my ai</h1>
+      </header>
+
+      <p>
+        your ai talks, this plays it. one note per chunk of the reply, nothing to
+        configure.
+      </p>
+
+      <section class="demo">
+        <div class="controls">
+          <button id="play" type="button">play a reply</button>
+          <select id="voice" aria-label="voice"></select>
+        </div>
+
+        <div class="thread">
+          <span class="who">you</span>
+          <p class="said">what am i listening to?</p>
+          <span class="who">ai</span>
+          <p class="said" id="out"></p>
+        </div>
+      </section>
+
+      <p>
+        it runs on claude.ai and chatgpt.com, which are hand-tuned, plus
+        chatjimmy, gemini, t3.chat, deepseek, grok, perplexity and mistral,
+        which share a reader that waits for a stream to prove itself before it
+        plays anything. six voices, a volume slider, mute on ⌘⇧M. that's the
+        whole popup.
+      </p>
+
+      <p>
+        it collects nothing, sends nothing, and makes no network requests. the
+        samples ship inside it.
+      </p>
+
+      <ul>
+        <!-- swap this href for the web store url the day the item goes live. -->
+        <li>
+          <a id="install" href="https://github.com/jassuwu/music-to-my-ai#build-it-yourself"
+            >install</a
+          >
+        </li>
+        <li><a href="https://github.com/jassuwu/music-to-my-ai">source</a></li>
+        <li><a href="https://jass.gg">jass.gg</a></li>
+      </ul>
+
+      <footer>a toy by jass</footer>
+    </main>
+    <script src="demo.js"></script>
+  </body>
+</html>
