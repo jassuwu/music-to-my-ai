@@ -4,7 +4,7 @@ your ai talks, this plays it. one note per chunk of the reply, nothing to config
 
 a chrome extension that turns a streaming llm answer into music while it arrives. every piece of text that lands strikes exactly one note. no loops, no backing track, nothing playing alongside the stream. the stream is the instrument.
 
-[hear it before you install it](https://jassuwu.github.io/music-to-my-ai). the demo on that page runs this repo's engine, not a recording.
+[hear it before you install it](https://music-to-my-ai.jass.gg). the demo on that page runs this repo's engine, not a recording.
 
 ## works on
 
@@ -19,8 +19,8 @@ six voices, one volume slider, per-site checkboxes, mute with a shortcut (`âŒ˜â‡
 ```
 bun install
 bun run build     # dist/, load unpacked at chrome://extensions
-bun run package   # the store zip
-bun run site      # docs/, the demo page
+bun run package   # a zip anyone can unzip and load unpacked
+bun run site      # dist-site/, the demo page
 ```
 
 no bundler framework, no plugins. `bun build` does everything an extension needs. `tracker/` is the decision log, `CONTEXT.md` the glossary, and the git history is a diary that includes the day this thing had four names.

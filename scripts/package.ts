@@ -1,11 +1,13 @@
 /**
- * Builds the store upload. One zip, versioned from manifest.json.
+ * Builds the zip people download. One file, versioned from manifest.json,
+ * meant for a GitHub release: unzip it, load unpacked, done, no bun and no
+ * clone. This is the whole distribution story — the Chrome Web Store wants
+ * $5 for a developer account and this is a toy.
  *
- * The Web Store wants a zip whose ROOT is the manifest, not a folder
- * containing it, which is why this zips from inside dist/ rather than zipping
- * the directory. Source maps and the icon SVGs are excluded: dist/ carries
- * both for local work, and neither is something a reviewer should have to
- * wonder about.
+ * The manifest sits at the ROOT of the zip, which is why this zips from
+ * inside dist/ rather than zipping the directory: Chrome refuses a folder it
+ * has to look inside of. Source maps and the icon SVGs are left out, since
+ * dist/ carries both for local work and neither belongs in a download.
  *
  *   bun run package
  */
@@ -30,5 +32,5 @@ await $`zip -r -X ../${OUT}/${zip} . -x '*.map' -x '*.svg' -x '.DS_Store'`.cwd("
 const bytes = Bun.file(`${OUT}/${zip}`).size;
 console.log(
   `${OUT}/${zip}  ${(bytes / 1024 / 1024).toFixed(2)} MB\n` +
-    `upload at https://chrome.google.com/webstore/devconsole — listing copy is in store/listing.md`,
+    `attach it to a release: gh release create v${version} ${OUT}/${zip}`,
 );

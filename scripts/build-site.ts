@@ -1,5 +1,5 @@
 /**
- * Builds the landing page into docs/.
+ * Builds the landing page into dist-site/, which Vercel deploys.
  *
  * Same recipe as the extension build, because it is the same problem: one
  * self-contained IIFE, unhashed filenames, static assets copied beside it. No
@@ -11,7 +11,7 @@
  */
 import { rm, mkdir, cp } from "node:fs/promises";
 
-const OUT = "docs";
+const OUT = "dist-site";
 
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
@@ -35,7 +35,7 @@ await cp("assets/icons", `${OUT}/icons`, { recursive: true });
 // Every voice, because the picker offers every voice. They are fetched only
 // when one is chosen, so the page still starts on ~40 KB of kalimba.
 await cp("assets/samples", `${OUT}/samples`, { recursive: true });
-// The link preview image, reused from the store tile.
-await cp("store/promo-1400x560.png", `${OUT}/promo.png`);
+// The link preview image: the mark on ink, generated from the icon.
+await cp("assets/promo.png", `${OUT}/promo.png`);
 
-console.log(`built -> ${OUT}/  (serve it: bunx serve docs)`);
+console.log(`built -> ${OUT}/  (serve it: bunx serve ${OUT})`);
