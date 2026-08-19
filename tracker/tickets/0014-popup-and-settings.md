@@ -17,3 +17,7 @@ Task. Build the control surface exactly as settled in [Control surface](0004-sou
 - Persist to `chrome.storage.sync`; content scripts react to changes live.
 - `chrome.commands` mute shortcut.
 - Expose nothing else — register, reverb, pitch movement and burst-thinning stay baked-in constants.
+
+## Implementation note
+
+Landed: master switch, volume slider (defaulting to 60%, and it steers an open audition live so dragging is audible), instrument grid of all 8 auditioning a three-note phrase on select, per-site toggles, and the mute shortcut read from `chrome.commands.getAll()` so the footer shows the shortcut the user actually has rather than the suggested default. Settings persist to `chrome.storage.sync`; content scripts already react to changes. Disabling mutes the controls visually rather than hiding them. **Open pending a look.**
