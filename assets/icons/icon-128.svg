@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Music to My AI: the reply becomes music. An ink speech bubble on
-       jass.gg's invariant lime, the note knocked out in the same lime.
-       Square corners (nothing on jass.gg is rounded); fills only (MSVG
-       drops strokes and mangles rotate). -->
+  <!-- music to my ai: a reply, singing. Rounded bubble with a curled tail,
+       the note knocked out in the lime and leaning like it's mid-bounce,
+       two little notes escaping. Fills only (MSVG drops strokes and
+       mangles rotate); the friendliness is drawn, not transformed. -->
   <rect width="128" height="128" fill="#d4fd80"/>
-  <rect x="20" y="24" width="88" height="60" fill="#0a0a0a"/>
-  <path d="M36 84 L54 84 L36 105 Z" fill="#0a0a0a"/>
-  <!-- the note, in lime -->
-  <ellipse cx="57" cy="67" rx="9.5" ry="7" fill="#d4fd80"/>
-  <rect x="63" y="37" width="5" height="30" fill="#d4fd80"/>
-  <path d="M68 37 q11 4.5 8.5 19 q-1.5 -9.5 -8.5 -13.5 z" fill="#d4fd80"/>
+  <!-- bubble -->
+  <rect x="14" y="30" width="84" height="56" rx="17" fill="#0a0a0a"/>
+  <!-- curled tail -->
+  <path d="M36 82 C36 96 28 106 18 111 C34 108 50 96 53 82 Z" fill="#0a0a0a"/>
+  <!-- the note, knocked out and leaning -->
+  <ellipse cx="49" cy="70" rx="10" ry="7.5" fill="#d4fd80"/>
+  <path d="M56.5 68 L60.5 42 L66 40.5 L62 66.5 Z" fill="#d4fd80"/>
+  <path d="M66 40.5 q12 3.5 9 18 q-2 -9 -10 -12 z" fill="#d4fd80"/>
+  <!-- escaping notes -->
+  <circle cx="105" cy="24" r="4.6" fill="#0a0a0a"/>
+  <path d="M108.5 22.5 L110 9.5 L113 9 L111.5 22 Z" fill="#0a0a0a"/>
+  <circle cx="119" cy="42" r="3.2" fill="#0a0a0a"/>
 </svg>

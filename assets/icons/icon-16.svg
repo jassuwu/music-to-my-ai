@@ -1,8 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-  <!-- Bubble and note at minimum viable detail: head and stem, no flag. -->
+  <!-- a reply, singing, at minimum detail: soft bubble, tail, note, one escapee. -->
   <rect width="16" height="16" fill="#d4fd80"/>
-  <rect x="2" y="3" width="12" height="7.6" fill="#0a0a0a"/>
-  <path d="M4.4 10.6 L7 10.6 L4.4 13.6 Z" fill="#0a0a0a"/>
-  <circle cx="7" cy="8.4" r="1.5" fill="#d4fd80"/>
-  <rect x="8" y="4.6" width="1.1" height="3.8" fill="#d4fd80"/>
+  <rect x="1.5" y="4" width="11" height="7.6" rx="2.6" fill="#0a0a0a"/>
+  <path d="M4.5 11.4 C4.5 13.2 3.5 14.4 2.3 15 C4.5 14.6 6.6 13 7 11.4 Z" fill="#0a0a0a"/>
+  <!-- at 16 the note inside smears, so the bubble types instead: the
+       classic three dots, with the music escaping above -->
+  <circle cx="4.4" cy="7.8" r="1" fill="#d4fd80"/>
+  <circle cx="7.9" cy="7.8" r="1" fill="#d4fd80"/>
+  <circle cx="11.4" cy="7.8" r="1" fill="#d4fd80"/>
+  <circle cx="13.6" cy="3.4" r="1.3" fill="#0a0a0a"/>
+  <path d="M14.5 2.9 L14.9 0.6 L15.9 0.4 L15.5 2.7 Z" fill="#0a0a0a"/>
 </svg>

@@ -1,9 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- The reply becomes music: ink bubble, lime note knockout. -->
+  <!-- a reply, singing: rounded bubble, curled tail, leaning note, escapees. -->
   <rect width="48" height="48" fill="#d4fd80"/>
-  <rect x="7.5" y="9" width="33" height="22.5" fill="#0a0a0a"/>
-  <path d="M13.5 31.5 L20.3 31.5 L13.5 39.4 Z" fill="#0a0a0a"/>
-  <ellipse cx="21.4" cy="25.1" rx="3.6" ry="2.6" fill="#d4fd80"/>
-  <rect x="23.6" y="13.9" width="1.9" height="11.2" fill="#d4fd80"/>
-  <path d="M25.5 13.9 q4.1 1.7 3.2 7.1 q-0.6 -3.6 -3.2 -5.1 z" fill="#d4fd80"/>
+  <rect x="5" y="11" width="32" height="21.5" rx="6.5" fill="#0a0a0a"/>
+  <path d="M13.5 31 C13.5 36 10.5 40 7 41.8 C13 40.5 19 36 20 31 Z" fill="#0a0a0a"/>
+  <ellipse cx="18.3" cy="26.3" rx="3.8" ry="2.9" fill="#d4fd80"/>
+  <path d="M21.1 25.5 L22.7 15.7 L24.8 15.1 L23.2 24.9 Z" fill="#d4fd80"/>
+  <path d="M24.8 15.1 q4.5 1.3 3.4 6.8 q-0.8 -3.4 -3.8 -4.5 z" fill="#d4fd80"/>
+  <circle cx="39.5" cy="9" r="1.8" fill="#0a0a0a"/>
+  <path d="M40.8 8.4 L41.4 3.6 L42.6 3.4 L42 8.2 Z" fill="#0a0a0a"/>
+  <circle cx="44.6" cy="15.8" r="1.2" fill="#0a0a0a"/>
 </svg>
