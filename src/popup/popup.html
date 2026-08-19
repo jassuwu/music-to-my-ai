@@ -4,23 +4,135 @@
     <meta charset="utf-8" />
     <title>Aux</title>
     <style>
-      :root { color-scheme: light dark; }
+      /* Themed from jass.gg, the owner's own site, token for token. Four
+         invented identities were rejected in a row (ticket 0016); this one
+         isn't invented. Every value below is either lifted from
+         `jass.gg/src/styles/global.css` or is the system-font equivalent of
+         a face that site ships and an extension can't.
+
+         The structure is untouched — four groups of native controls, no
+         wordmark, no widget of our own. Only the tokens changed. */
+      :root {
+        /* The site themes both ways from `color-scheme` alone, with one
+           `light-dark()` per token and no toggle. So does this. */
+        color-scheme: light dark;
+
+        /* His three neutrals, verbatim: a page colour, a text colour, and a
+           quieter text colour. There is no surface and no border token
+           because jass.gg has neither — it has no cards, no panels, and
+           nothing on it is rounded. */
+        --background: light-dark(oklch(1 0 0), oklch(0.145 0 0));
+        --foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+        --muted-foreground: light-dark(oklch(0.556 0 0), oklch(0.708 0 0));
+
+        /* accent-mark — the site's one invariant colour (#d4fd80), the lime
+           of his favicon tile and of this extension's icon. Unthemed on
+           purpose, exactly as there: a mark doesn't flip. It is allowed to
+           fill and to rule, never to be text, which is precisely the three
+           jobs it holds here — the native `accent-color`, the focus ring,
+           and the selection. Nothing else in this popup is coloured. */
+        --accent-mark: #d4fd80;
+        --on-accent: oklch(0.145 0 0);
+      }
+
       body {
-        width: 240px; margin: 0;
-        font: 13px/1.5 system-ui, sans-serif;
+        width: 240px;
+        margin: 0;
+        padding: 14px 0;
+        background: var(--background);
+        color: var(--foreground);
+
+        /* The machine role. jass.gg runs three typefaces and gives this one
+           "anything factual": section labels, the socials row, the stamp.
+           A 240px panel of voice names, hostnames and a shortcut is a
+           socials row, not prose, so it takes the machine role at the site's
+           `meta` step — 13px/1.5, the same size that row is set at. The
+           paper serif is deliberately absent: his own CSS calls 18px "where
+           Baskervville stops looking thin", and nothing here is 18px.
+           System mono because no extension should ship a font file. */
+        font:
+          13px/1.5 ui-monospace,
+          SFMono-Regular,
+          "SF Mono",
+          Menlo,
+          Consolas,
+          monospace;
+
+        /* Lowercase, the way the site writes its own headings ("things",
+           "toys") and every label in its socials row. */
+        text-transform: lowercase;
+
+        /* The intended way in, and the reason the controls stay native. */
+        accent-color: var(--accent-mark);
       }
-      section { padding: 10px 14px; }
+
+      /* No rules between the groups. The old separators were the last
+         invention left in here, and jass.gg draws no lines at all — it
+         separates by space and lets the one rule of its lists hold: the gap
+         between groups stays visibly larger than the gap inside one. 16
+         against 4. */
+      section {
+        padding: 0 14px;
+      }
       section + section {
-        border-top: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+        margin-top: 16px;
       }
-      label { display: flex; align-items: center; gap: 8px; }
-      .voices label, .sites label { padding: 2px 0; }
-      input { margin: 0; }
-      input[type="range"] { flex: 1; }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .voices label,
+      .sites label {
+        padding: 2px 0;
+      }
+      input {
+        margin: 0;
+      }
+      input[type="range"] {
+        flex: 1;
+      }
+
+      /* The index page's only contrast, borrowed whole: an entry's name sits
+         at full foreground against a muted description, and pointing at it
+         lifts the muted half out over 150ms. Here the chosen voice and the
+         enabled sites are the names — what is on is simply darker than what
+         is off. No badge, no highlight, no second colour. */
+      .voices label,
+      .sites label {
+        color: var(--muted-foreground);
+        transition: color 150ms ease;
+      }
+      .voices label:hover,
+      .sites label:hover,
+      .voices label:has(:checked),
+      .sites label:has(:checked) {
+        color: var(--foreground);
+      }
+
+      /* His focus ring, to the pixel: 2px of the invariant lime, 3px clear of
+         the control, square. */
+      input:focus-visible {
+        outline: 2px solid var(--accent-mark);
+        outline-offset: 3px;
+      }
+
+      /* Unthemed both sides, so a selection looks identical in light and
+         dark — the site's reasoning, not a copy of its values by accident. */
+      ::selection {
+        background-color: var(--accent-mark);
+        color: var(--on-accent);
+      }
+
       kbd {
         margin-left: auto;
-        font: 11px system-ui, sans-serif;
-        color: light-dark(rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.5));
+        font: inherit;
+        font-size: 11px; /* the site's `micro` step, its quietest text */
+        color: var(--muted-foreground);
+        /* A keystroke is a literal, like the `<time>` stamp in his footer.
+           Everything else lowercases; this prints what the browser reports. */
+        text-transform: none;
       }
     </style>
   </head>
