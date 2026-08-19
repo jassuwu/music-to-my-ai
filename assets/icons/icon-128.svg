@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect x="3" y="3" width="122" height="122" rx="28" fill="#D2D2D8"/>
-  <rect x="5" y="5" width="118" height="118" rx="26" fill="#F7F7F9"/>
-  <!-- screen -->
-  <rect x="29" y="22" width="70" height="46" rx="7" fill="#1C1C20"/>
-  <rect x="33" y="26" width="62" height="38" rx="3" fill="#DFE9F2"/>
-  <rect x="34" y="26" width="60" height="9" fill="#C3D4E5"/>
-  <!-- click wheel -->
-  <circle cx="64" cy="93" r="25" fill="#E3E3E8"/>
-  <circle cx="64" cy="93" r="10.5" fill="#D8D8DE"/>
-  <circle cx="64" cy="93" r="9.5" fill="#FAFAFC"/>
+  <rect x="0" y="0" width="128" height="128" rx="28" fill="#1D1D1F"/>
+  <ellipse cx="53" cy="90" rx="13" ry="10" fill="#FFFFFF"/>
+  <rect x="59" y="36" width="7" height="54" fill="#FFFFFF"/>
+  <path d="M66 36 c14 6 18 16 12 30 c0 -12 -6 -18 -12 -20 z" fill="#FFFFFF"/>
 </svg>
