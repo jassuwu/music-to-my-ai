@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "bun run scripts/build.ts",
-    "dev": "bun --watch scripts/build.ts"
+    "dev": "bun --watch scripts/build.ts",
+    "build:harness": "bun run scripts/build-harness.ts",
+    "dev:harness": "bun --watch scripts/build-harness.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.3.14",
