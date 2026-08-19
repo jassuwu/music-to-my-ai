@@ -59,6 +59,8 @@ async function audition(inst: InstrumentDefinition): Promise<void> {
   const { ctx, sampler } = audio;
   await sampler.load(inst);
 
+  strikeMark();
+
   const degrees = [0, 2, 4];
   degrees.forEach((degree, i) => {
     const step = inst.scale[degree % inst.scale.length] ?? 0;
@@ -72,6 +74,25 @@ async function audition(inst: InstrumentDefinition): Promise<void> {
       inst,
       inst.release,
     );
+  });
+}
+
+/**
+ * The header mark is the logo and the feedback in one object: its bars strike
+ * in time with the three notes of the audition, so picking a voice teaches you
+ * what the icon means.
+ */
+function strikeMark(): void {
+  const tines = document.querySelectorAll<SVGRectElement>(".mark rect.tine");
+  // Bars 2, 4, 1 — the same order and spacing as the notes being played.
+  [1, 3, 0].forEach((bar, i) => {
+    const tine = tines[bar];
+    if (!tine) return;
+    setTimeout(() => {
+      tine.classList.remove("hit");
+      void tine.getBoundingClientRect();  // restart the animation
+      tine.classList.add("hit");
+    }, i * 130);
   });
 }
 
@@ -89,6 +110,9 @@ function renderInstruments(): void {
       button.addEventListener("click", () => {
         save({ instrument: inst.id });
         renderInstruments();
+        const picked = host.children[INSTRUMENTS.indexOf(inst)];
+        picked?.classList.add("struck");
+        setTimeout(() => picked?.classList.remove("struck"), 240);
         void audition(inst);
       });
       return button;
