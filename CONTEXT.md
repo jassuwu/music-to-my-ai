@@ -11,4 +11,4 @@ Glossary for Aux — a browser extension that turns streaming LLM responses into
 - **Mapping** — the rule set translating Chunks into sound. Settled as **Direct**: exactly one sound per Chunk, fired on arrival, never smoothed or rescheduled. There is only one Mapping; the discarded "Sound Pack" idea (switchable bundles of alternative Mappings) is retired.
 - **Voice** — the character of a single chunk-hit: timbre, envelope, register, and space. Settled per instrument; Kalimba-like warmth is the default.
 - **Instrument** — the user-selectable sound source a Voice is built on (piano, guitar, sitar, harp, …). The only thing the user may swap; the Mapping stays Direct.
-- **Adapter** — per-site logic that locates response containers and reports Chunks and stream end. v1 has two: claude.ai and chatgpt.com.
+- **Adapter** — per-site logic that locates response containers and reports Chunks and stream end. Two tiers: **tuned** adapters built from live DOM measurement (claude.ai, chatgpt.com) and a **generic** adapter (growth heuristic, quiescence end) shared by every other registered site. The site list lives in `src/sites.ts`.
