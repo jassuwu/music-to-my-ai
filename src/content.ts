@@ -1,103 +1,84 @@
 import { createUnlockedContext } from "./core/unlock";
-import type { Chunk } from "./core/types";
+import { Sampler } from "./core/sampler";
+import { Engine } from "./core/engine";
+import { adapterFor } from "./adapters";
+import { DEFAULT_INSTRUMENT_ID, getInstrument } from "./instruments";
 
 /**
- * Skeleton entry point. Proves injection, permissions and the audio-unlock
- * path end to end by logging one line per Chunk.
- *
- * The observer below is a deliberately generic placeholder: real per-site
- * Adapters (with the measured selectors, the 900ms quiescence rule and
- * defensive fallbacks) arrive with the adapters ticket and will replace it.
+ * Content-script entry point. Finds the adapter for this site, wires it to the
+ * engine, and keeps both in step with the user's settings.
  */
 
 const LOG = "[music-to-my-agents]";
-const QUIESCENCE_MS = 900;
 
-const { ctx, ready } = createUnlockedContext();
-void ready.then(() => console.log(`${LOG} audio unlocked (${ctx.sampleRate}Hz)`));
-
-/** Text length of a node, cheap enough to call per callback. */
-const lengthOf = (n: Node): number => (n.textContent ?? "").length;
-
-function findConversationRoot(): Element {
-  const candidates = [
-    "main",
-    '[role="main"]',
-    "#__next",
-  ];
-  for (const sel of candidates) {
-    const el = document.querySelector(sel);
-    if (el) return el;
-  }
-  return document.body;
+interface Settings {
+  muted: boolean;
+  volume: number;
+  instrument: string;
+  sites: Record<string, boolean>;
 }
 
-let lastLength = 0;
-let chunkCount = 0;
-let endTimer: ReturnType<typeof setTimeout> | undefined;
-let streaming = false;
+const DEFAULTS: Settings = {
+  muted: false,
+  // Never 100%: the first response after install sets the impression.
+  volume: 0.6,
+  instrument: DEFAULT_INSTRUMENT_ID,
+  sites: { claude: true, chatgpt: true },
+};
 
-const root = findConversationRoot();
-lastLength = lengthOf(root);
+async function main(): Promise<void> {
+  const adapter = adapterFor(location.href);
+  if (!adapter) return;
 
-const observer = new MutationObserver((records) => {
-  // One Chunk per callback, never per record — see Chunk in core/types.
-  let added = "";
-  let sawCode = false;
+  const settings = (await chrome.storage.sync.get(DEFAULTS)) as Settings;
 
-  for (const r of records) {
-    if (r.type === "characterData") {
-      added += (r.target as CharacterData).data ?? "";
-    }
-    for (const node of r.addedNodes) {
-      added += node.textContent ?? "";
-      if (
-        node.nodeType === Node.ELEMENT_NODE &&
-        ((node as Element).matches?.("pre, code") ||
-          (node as Element).querySelector?.("pre, code"))
-      ) {
-        sawCode = true;
-      }
-    }
-  }
+  const { ctx, ready } = createUnlockedContext();
+  const master = ctx.createGain();
+  master.gain.value = 0;
+  master.connect(ctx.destination);
 
-  // Net growth of the whole subtree is the honest signal; the concatenation
-  // above over-counts when a node is re-rendered rather than appended.
-  const current = lengthOf(root);
-  const delta = current - lastLength;
-  lastLength = current;
-  if (delta <= 0) return;
+  const sampler = new Sampler(ctx, master);
+  let instrument = getInstrument(settings.instrument);
 
-  const chunk: Chunk = {
-    text: added.slice(0, 200),
-    chars: delta,
-    isCode: sawCode,
-    endsSentence: /[.!?]["')\s]*$/.test(added),
-    at: ctx.currentTime,
+  const engine = new Engine(ctx, sampler, instrument, master);
+  engine.start();
+
+  const applyVolume = (s: Settings) => {
+    const enabled = s.sites[adapter.id] !== false && !s.muted;
+    engine.setVolume(enabled ? s.volume : 0);
   };
 
-  if (!streaming) {
-    streaming = true;
-    chunkCount = 0;
-    console.log(`${LOG} stream started`);
-  }
-  chunkCount += 1;
-  console.log(
-    `${LOG} chunk ${chunkCount}: ${chunk.chars} chars` +
-      `${chunk.isCode ? " [code]" : ""}${chunk.endsSentence ? " [sentence]" : ""}`,
+  // Audio cannot start before a real gesture; the user's own click or Enter to
+  // submit a prompt supplies it well before any text streams back. If none ever
+  // arrives we simply stay silent — no banner, no nag.
+  void ready.then(async () => {
+    await sampler.load(instrument);
+    applyVolume(settings);
+    console.log(`${LOG} ready — ${instrument.label} on ${adapter.id}`);
+  });
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.muted) settings.muted = changes.muted.newValue as boolean;
+    if (changes.volume) settings.volume = changes.volume.newValue as number;
+    if (changes.sites) settings.sites = changes.sites.newValue as Settings["sites"];
+    if (changes.instrument) {
+      settings.instrument = changes.instrument.newValue as string;
+      instrument = getInstrument(settings.instrument);
+      engine.setInstrument(instrument);
+      void sampler.load(instrument);
+    }
+    applyVolume(settings);
+  });
+
+  adapter.start(
+    {
+      onChunk: (chunk) => engine.onChunk(chunk),
+      onStreamEnd: () => engine.onStreamEnd(),
+    },
+    () => ctx.currentTime,
   );
 
-  clearTimeout(endTimer);
-  endTimer = setTimeout(() => {
-    streaming = false;
-    console.log(`${LOG} stream ended after ${chunkCount} chunks (quiescence)`);
-  }, QUIESCENCE_MS);
-});
+  console.log(`${LOG} watching ${location.hostname} via ${adapter.id} adapter`);
+}
 
-observer.observe(root, {
-  childList: true,
-  subtree: true,
-  characterData: true,
-});
-
-console.log(`${LOG} watching ${location.hostname} — click or type to unlock audio`);
+void main();
