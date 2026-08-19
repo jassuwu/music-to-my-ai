@@ -3,14 +3,14 @@ import { INSTRUMENTS, DEFAULT_INSTRUMENT_ID } from "../instruments";
 import type { InstrumentDefinition } from "../core/types";
 
 /**
- * The control surface is a halo.
+ * The control surface is an iPod.
  *
- * The six voices are lights sitting on a ring, placed by register: the
- * lowest voice at the base of the ring, pitch rising around both sides
- * to the highest at the zenith. Striking a light picks that voice and
- * plays it, and the halo ripples. The heart of the ring turns the sound
- * on and off; muted, the halo goes dark. Everything below the ring is
- * deliberately quiet.
+ * Nothing here is invented: the click wheel already solved this control
+ * set in 2004. Previous/next step through the six voices, play/pause is
+ * mute (the LCD backlight goes off), dragging around the wheel is volume
+ * exactly as the original scroll wheel was, MENU flips the screen to the
+ * voices list, and the status bar counts "3 of 6". The screen is a Now
+ * Playing view where the "artist" line is the two sites.
  */
 
 interface Settings {
@@ -42,22 +42,8 @@ const save = (patch: Partial<Settings>): void => {
   void chrome.storage.sync.set(patch);
 };
 
-/**
- * Where each voice sits on the ring.
- *
- * Sorted by register, the lowest voice takes the base of the ring (90° in
- * screen coordinates) and the rest alternate left and right, climbing both
- * flanks so that pitch rises toward the zenith. The layout is computed from
- * the instruments' base notes, so it stays honest if the roster changes.
- */
-function haloLayout(): Array<{ inst: InstrumentDefinition; angleDeg: number }> {
-  const byPitch = [...INSTRUMENTS].sort((a, b) => a.base - b.base);
-  const step = 360 / Math.max(1, byPitch.length);
-  return byPitch.map((inst, i) => ({
-    inst,
-    angleDeg: 90 + (i % 2 === 1 ? 1 : -1) * Math.ceil(i / 2) * step,
-  }));
-}
+const selected = (): InstrumentDefinition =>
+  INSTRUMENTS.find((i) => i.id === settings.instrument) ?? INSTRUMENTS[0]!;
 
 /* --- audition ------------------------------------------------------------ */
 
@@ -93,93 +79,164 @@ async function audition(inst: InstrumentDefinition): Promise<void> {
   });
 }
 
-/* --- rendering ------------------------------------------------------------ */
+/* --- the screen ----------------------------------------------------------- */
 
-function ripple(): void {
-  const wave = document.createElement("div");
-  wave.className = "ripple";
-  wave.addEventListener("animationend", () => wave.remove());
-  $("sky").append(wave);
-}
+let view: "now" | "list" = "now";
+let volumeLabelTimer: ReturnType<typeof setTimeout> | undefined;
 
-function showVoice(inst: InstrumentDefinition, struck: boolean): void {
-  const voice = $("voice");
-  voice.textContent = inst.label;
-  if (!struck) return;
-  voice.classList.add("struck");
-  void voice.offsetWidth; // let the hot color land before fading back
-  voice.classList.remove("struck");
-}
-
-const RING_RADIUS = 71; // half the halo's 142px diameter
-
-function renderHalo(): void {
-  const sky = $("sky");
-  for (const { inst, angleDeg } of haloLayout()) {
-    const orb = document.createElement("button");
-    orb.className = "orb";
-    const a = (angleDeg * Math.PI) / 180;
-    orb.style.left = `calc(50% + ${(RING_RADIUS * Math.cos(a)).toFixed(1)}px)`;
-    orb.style.top = `calc(50% + ${(RING_RADIUS * Math.sin(a)).toFixed(1)}px)`;
-    orb.title = inst.label;
-    orb.setAttribute("aria-label", inst.label);
-    orb.setAttribute("aria-pressed", String(inst.id === settings.instrument));
-
-    orb.addEventListener("click", () => {
-      save({ instrument: inst.id });
-      for (const other of sky.querySelectorAll(".orb")) {
-        other.setAttribute("aria-pressed", String(other === orb));
-      }
-      ripple();
-      showVoice(inst, true);
-      void audition(inst);
-    });
-
-    // Hovering previews the name without committing to it.
-    orb.addEventListener("pointerenter", () => showVoice(inst, false));
-    orb.addEventListener("pointerleave", () => showVoice(selected(), false));
-
-    sky.append(orb);
+function renderStatus(): void {
+  const position = INSTRUMENTS.indexOf(selected()) + 1;
+  $("status-left").textContent = settings.muted
+    ? "⏸︎"
+    : `${position} of ${INSTRUMENTS.length}`;
+  if (!volumeLabelTimer) {
+    $("status-title").textContent = view === "list" ? "Voices" : "Now Playing";
   }
 }
 
-const selected = (): InstrumentDefinition =>
-  INSTRUMENTS.find((i) => i.id === settings.instrument) ?? INSTRUMENTS[0]!;
+function renderNow(): void {
+  $("track").textContent = selected().label;
+  $("volfill").style.width = `${Math.round(settings.volume * 100)}%`;
+  $("wheel").setAttribute("aria-valuenow", String(Math.round(settings.volume * 100)));
+  renderStatus();
+}
 
 function renderSites(): void {
-  $("sites").replaceChildren(
-    ...SITES.map(({ id, label }) => {
-      const button = document.createElement("button");
-      button.className = "site";
-      button.setAttribute("aria-pressed", String(settings.sites[id] !== false));
+  const line = $("sites");
+  line.replaceChildren();
+  SITES.forEach(({ id, label }, i) => {
+    if (i > 0) {
+      const sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = " · ";
+      line.append(sep);
+    }
+    const button = document.createElement("button");
+    button.className = "site";
+    button.textContent = label;
+    button.title = `Play on ${label}`;
+    button.setAttribute("aria-pressed", String(settings.sites[id] !== false));
+    button.addEventListener("click", () => {
+      const next = settings.sites[id] === false;
+      save({ sites: { ...settings.sites, [id]: next } });
+      button.setAttribute("aria-pressed", String(next));
+    });
+    line.append(button);
+  });
+}
 
-      const lamp = document.createElement("span");
-      lamp.className = "lamp";
+function renderList(): void {
+  $("view-list").replaceChildren(
+    ...INSTRUMENTS.map((inst) => {
+      const row = document.createElement("button");
+      row.className = "row";
       const name = document.createElement("span");
-      name.textContent = label;
-      button.append(lamp, name);
-
-      button.addEventListener("click", () => {
-        const next = settings.sites[id] === false;
-        save({ sites: { ...settings.sites, [id]: next } });
-        button.setAttribute("aria-pressed", String(next));
+      name.textContent = inst.label;
+      const check = document.createElement("span");
+      check.className = "check";
+      check.textContent = inst.id === settings.instrument ? "✓" : "";
+      row.append(name, check);
+      row.addEventListener("click", () => {
+        save({ instrument: inst.id });
+        void audition(inst);
+        setView("now");
       });
-      return button;
+      return row;
     }),
   );
 }
 
-function renderPower(): void {
-  $("power").setAttribute("aria-pressed", String(!settings.muted));
-  document.body.classList.toggle("off", settings.muted);
+function setView(next: "now" | "list"): void {
+  view = next;
+  $("view-now").hidden = next !== "now";
+  $("view-list").hidden = next !== "list";
+  if (next === "list") renderList();
+  else renderNow();
+  renderStatus();
 }
 
-function renderVolume(): void {
-  const percent = Math.round(settings.volume * 100);
-  const volume = $<HTMLInputElement>("volume");
-  volume.value = String(percent);
-  volume.style.setProperty("--vol", `${percent}%`);
-  $("volume-val").textContent = String(percent);
+function renderBacklight(): void {
+  document.body.classList.toggle("off", settings.muted);
+  renderStatus();
+}
+
+/* --- choosing a voice ------------------------------------------------------ */
+
+function stepVoice(direction: 1 | -1): void {
+  const index = INSTRUMENTS.indexOf(selected());
+  const next =
+    INSTRUMENTS[(index + direction + INSTRUMENTS.length) % INSTRUMENTS.length]!;
+  save({ instrument: next.id });
+  if (view === "list") renderList();
+  else renderNow();
+  renderStatus();
+  void audition(next);
+}
+
+/* --- the wheel is the volume ---------------------------------------------- */
+
+function showVolumeLabel(): void {
+  $("status-title").textContent = "Volume";
+  if (volumeLabelTimer) clearTimeout(volumeLabelTimer);
+  volumeLabelTimer = setTimeout(() => {
+    volumeLabelTimer = undefined;
+    renderStatus();
+  }, 900);
+}
+
+function nudgeVolume(delta: number, commit: boolean): void {
+  settings.volume = Math.min(1, Math.max(0, settings.volume + delta));
+  renderNow();
+  showVolumeLabel();
+  audio?.master.gain.setTargetAtTime(
+    settings.volume,
+    audio.ctx.currentTime,
+    0.02,
+  );
+  if (commit) save({ volume: settings.volume });
+}
+
+function wireWheel(): void {
+  const wheel = $("wheel");
+  let lastAngle: number | undefined;
+
+  const angleAt = (e: PointerEvent): number => {
+    const box = wheel.getBoundingClientRect();
+    return Math.atan2(
+      e.clientY - (box.top + box.height / 2),
+      e.clientX - (box.left + box.width / 2),
+    );
+  };
+
+  wheel.addEventListener("pointerdown", (e) => {
+    if (e.target !== wheel) return; // buttons on the wheel keep their jobs
+    wheel.setPointerCapture(e.pointerId);
+    lastAngle = angleAt(e);
+  });
+  wheel.addEventListener("pointermove", (e) => {
+    if (lastAngle === undefined) return;
+    const angle = angleAt(e);
+    let delta = angle - lastAngle;
+    if (delta > Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+    lastAngle = angle;
+    // one full turn of the wheel sweeps the whole range, like the original
+    nudgeVolume(delta / (2 * Math.PI), false);
+  });
+  const release = (): void => {
+    if (lastAngle === undefined) return;
+    lastAngle = undefined;
+    save({ volume: settings.volume });
+  };
+  wheel.addEventListener("pointerup", release);
+  wheel.addEventListener("pointercancel", release);
+
+  wheel.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" || e.key === "ArrowRight") nudgeVolume(0.02, true);
+    else if (e.key === "ArrowDown" || e.key === "ArrowLeft") nudgeVolume(-0.02, true);
+    else return;
+    e.preventDefault();
+  });
 }
 
 /* --- boot ----------------------------------------------------------------- */
@@ -187,28 +244,21 @@ function renderVolume(): void {
 async function main(): Promise<void> {
   settings = (await chrome.storage.sync.get(DEFAULTS)) as Settings;
 
-  renderPower();
-  renderVolume();
-  renderHalo();
   renderSites();
-  showVoice(selected(), false);
-  if (!settings.muted) ripple(); // one slow breath as the panel opens
+  renderNow();
+  renderBacklight();
+  wireWheel();
 
-  $("power").addEventListener("click", () => {
+  $("btn-prev").addEventListener("click", () => stepVoice(-1));
+  $("btn-next").addEventListener("click", () => stepVoice(1));
+  $("btn-center").addEventListener("click", () => void audition(selected()));
+  $("btn-pause").addEventListener("click", () => {
     save({ muted: !settings.muted });
-    renderPower();
-    if (!settings.muted) ripple();
+    renderBacklight();
   });
-
-  const volume = $<HTMLInputElement>("volume");
-  volume.addEventListener("input", () => {
-    const value = Number(volume.value) / 100;
-    save({ volume: value });
-    volume.style.setProperty("--vol", `${volume.value}%`);
-    $("volume-val").textContent = volume.value;
-    // Keep an open audition in step, so dragging the slider is audible.
-    audio?.master.gain.setTargetAtTime(value, audio.ctx.currentTime, 0.02);
-  });
+  $("btn-menu").addEventListener("click", () =>
+    setView(view === "list" ? "now" : "list"),
+  );
 
   // Show the shortcut the user actually has, not the suggested default.
   const commands = await chrome.commands.getAll();
