@@ -23,12 +23,8 @@ const ROSTER: Record<string, string> = {
   kalimba: "kalimba",
   piano: "acoustic_grand_piano",
   "acoustic-guitar": "acoustic_guitar_nylon",
-  "electric-guitar": "electric_guitar_clean",
   bass: "electric_bass_finger",
   harp: "orchestral_harp",
-  // Pizzicato, not bowed: a bowed note's character lives in its sustain, so it
-  // would sound wrong triggered one-shot per Chunk.
-  violin: "pizzicato_strings",
   sitar: "sitar",
 };
 
