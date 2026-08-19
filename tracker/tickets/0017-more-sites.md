@@ -27,3 +27,9 @@ Degraded by design: no fast end signal, no oversized-Chunk suppression of whole-
 **Sites added** (all generic, all on by default, each toggleable in the popup): chatjimmy.ai (requested), gemini.google.com, t3.chat, chat.deepseek.com, grok.com, perplexity.ai, chat.mistral.ai. Candidates left out but one line away: copilot.microsoft.com, poe.com, meta.ai, chat.qwen.ai, kimi.com, duck.ai.
 
 None of the seven has been live-verified; that is inherent to the generic tier, and the first real stream on each is the test.
+
+### Amendment: the everything-sounds bug, again
+
+The user reported the original claude.ai bug — sound on any page change — back on the generic sites. The first cut had two holes: with no message-shaped ancestor it adopted the observation root, after which any two text changes anywhere in `main` played; and "emit from the second growth" is a bar that recurring churn (re-rendering timestamps, animated "..." loaders) clears easily.
+
+Fix: **a stream must prove itself**. The same element has to grow `CONFIRM_EVENTS = 3` times inside `CONFIRM_WINDOW_S = 2` seconds, and any shrink before confirmation resets the proof, because streams never shrink but loader animations shrink every cycle. Real streams clear the bar in under a second at the measured 4.8–6.6 growths/sec; timestamps tick once a minute and one-shot changes grow once, so neither can confirm. Cost: roughly the first three chunks of each reply on generic sites are swallowed (~0.5–0.8s of intro), which the tuned adapters do not pay.
