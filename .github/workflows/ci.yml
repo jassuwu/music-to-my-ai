@@ -16,7 +16,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
 
@@ -38,7 +38,7 @@ jobs:
       # So a pull request can be installed and heard without a local bun.
       # 90 days is the default retention; nobody needs a branch build older
       # than that.
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: music-to-my-ai-${{ github.sha }}
           path: release/*.zip
