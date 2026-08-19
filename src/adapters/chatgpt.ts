@@ -7,9 +7,12 @@ import { observeStream } from "./shared";
  * No trustworthy streaming flag exists here. Live measurement showed
  * `.result-streaming` present for ~800ms of a 36-second stream, and
  * `[data-testid="stop-button"]` flickering mid-stream and still present three
- * seconds after the response finished — so this adapter relies purely on
- * quiescence. Turn identity is never keyed off `data-testid` numbering, which
- * the site renumbers live (conversation-turn-2 -> 3 -> 2 was observed).
+ * seconds after the response finished — so this adapter relies on quiescence
+ * plus the shared baseline rule: a message only makes sound once it has been
+ * adopted and then grows.
+ *
+ * Turn identity is never keyed off `data-testid` numbering, which the site
+ * renumbers live (conversation-turn-2 -> 3 -> 2 was observed).
  */
 export const chatgptAdapter: Adapter = {
   id: "chatgpt",
@@ -27,7 +30,11 @@ export const chatgptAdapter: Adapter = {
     };
 
     return observeStream(
-      { root, activeMessage },
+      {
+        root,
+        activeMessage,
+        onDebug: (m) => console.log(`[music-to-my-agents] ${m}`),
+      },
       handlers,
       now,
     );
