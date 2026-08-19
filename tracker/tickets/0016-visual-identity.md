@@ -31,3 +31,29 @@ Could not be rendered locally for review (no Chromium binary available to drive 
 The first pass was a skin: palette, type and control shapes changed, but the layout was still header / label / control / label / control, which is the shape of a settings form. Character has to come from structure, not decoration.
 
 Rebuilt around the comb. The voice picker is now six tines you strike rather than a grid you configure, laid out like a real kalimba: length follows the instrument's register (bass longest, harp shortest) and the lowest sits centre with the rest alternating outward, producing the arch. So the comb is a picture of the roster's pitch range rather than an ornament. Striking a tine picks the voice, plays it, and flashes its name in the readout below in phosphor green before settling to orange. Section headings are gone entirely — the fader carries a silkscreen `VOL`, and the sites are lamps rather than a labelled list.
+
+### Third pass: the restart
+
+The user's verdict on both passes was the same: still a settings screen, "not like a divine, flairful thing", and the brief was widened to a full restart. New name, new logo, new colour, new feeling, with divine-ness and simplicity as the target words. The hardware-panel direction itself was the mistake, not its execution. Pocket operators are workshop objects; the brief wanted something sacred.
+
+**The name is Halo.** It is the ring of light around something sacred, and the word audio engineers already use for the shimmer a note leaves hanging in the air (a "reverb halo"). The extension puts a halo of sound around the machine's words. One word, no explanation needed, and the logo falls out of it for free. Runners-up, recorded so the choice is cheap to veto:
+
+- *Antiphon* — the sung reply in call-and-response liturgy, which is exactly what a chat is. Deepest meaning of the set, but it needs explaining, and the brief said simplicity.
+- *Psalm* — a sacred song. Right feeling, no obvious mark.
+- *Grace Notes* — the small quick ornamental notes each Chunk-hit literally is, plus divine grace. Loveliest pun, weakest as a product name.
+
+The working title "Music to My Agents" is retired. The repo directory keeps the old name; renaming a local folder buys nothing.
+
+**The mark** is a single luminous ring on warm darkness: halo and soundwave in one shape. At 128px it carries a fainter outer ripple and an ember at the heart; at 16px it reduces to one bright gold ring, which survives the toolbar where the comb's four bars smeared. Per-size SVGs rendered with ImageMagick. Its MSVG renderer silently drops any stroke without an explicit `stroke-opacity`, so every stroke states one.
+
+**The palette** is candle-gold on warm night: night `#0B0908`, gold `#E8C170`, hot core `#FFF0CE`, ivory text `#EDE6DA`, warm dim `#93887A`, ember `#4A3B21` for unlit states. Divine, as a visual language, means darkness with one source of light. The orange/green hardware pair is gone.
+
+**The type** is a humanist serif (Iowan Old Style, Palatino, Georgia stack — no shipped font files), replacing condensed silkscreen caps and monospace. The voice name is the largest thing on the panel, set in serif like a title page.
+
+**The structure**: the halo is the interface. The six voices are lights sitting on the ring, placed by register — bass at the base, pitch rising around both flanks, harp at the zenith — computed from the instruments' base notes, the same honesty the comb had, now celestial. Striking a light picks the voice, plays it, and the halo ripples outward. The heart of the ring is sound on/off; muted, the halo goes dark. Volume is one hairline with a gold dot; the sites are two quiet lamps; the mute shortcut sits alone in the footer.
+
+**The copy voice** is quiet declaratives in sentence case. Manifest: "A halo of sound for streaming AI answers. One note for each piece of the reply as it arrives."
+
+Fixed constraints honoured, not relitigated: Direct mapping, kalimba default, the 6-voice roster, the ticket-0004 control set (voice, volume, per-site toggles, mute shortcut, nothing else), 288px popup, `prefers-reduced-motion`, no in-page UI.
+
+**Open pending the user's eyes.**
