@@ -41,6 +41,31 @@ function degreeToMidi(degree: number, inst: InstrumentDefinition): number {
 }
 
 /**
+ * Semitones from `midi` to the nearest sample this instrument actually has.
+ * The sampler always plays the closest sample at an adjusted playbackRate
+ * (see sampler.ts), so this is exactly the shift that note will incur.
+ */
+function nearestSampleDistance(midi: number, inst: InstrumentDefinition): number {
+  let best = Infinity;
+  for (const key of Object.keys(inst.samples)) {
+    const distance = Math.abs(Number(key) - midi);
+    if (distance < best) best = distance;
+  }
+  return best;
+}
+
+/**
+ * Within the sampled range, two-samples-per-octave means the sampler never
+ * shifts more than ~4 semitones. 0015 tuning-pass register-sanity
+ * measurement found the weight-driven transpositions below can push well
+ * past that for register-mismatched cases (bass's -12 drop lands on MIDI
+ * 28/30 at low scale degrees, 6-8 semitones from its lowest sample at 36;
+ * -24 sub-octave is worse, up to -20). >5 semitones is treated as the
+ * audible-artifact line.
+ */
+const SAMPLE_SHIFT_BUDGET = 5;
+
+/**
  * How "big" a Chunk is, 0-1 on a log curve.
  *
  * Anchored so ordinary prose is unaffected: 0 at ~8 characters, 1 at ~800.
@@ -63,9 +88,23 @@ export function mapChunk(
   const degree = Math.max(0, Math.min(13, state.degree + (up ? 1 : -1)));
 
   const weight = weightOf(chunk.chars);
-  // Past half weight the note drops an octave — mass, not just volume.
-  const drop = weight > 0.5 ? -12 : 0;
-  const midi = degreeToMidi(degree, inst) + drop;
+  const undropped = degreeToMidi(degree, inst);
+
+  // Past half weight the note drops an octave — mass, not just volume. Skip
+  // the drop only when it would newly cross the sample-shift budget (i.e.
+  // the undropped note was fine but dropping it breaks the budget) — a
+  // register-mismatched instrument stays put rather than growling. If the
+  // undropped note was already past budget (high-register overshoot from
+  // the walk itself — see 0015 tuning-pass, out of scope here), the drop
+  // still applies since it does not make that pre-existing case worse.
+  let drop = 0;
+  if (weight > 0.5) {
+    const dropped = undropped - 12;
+    const wasFine = nearestSampleDistance(undropped, inst) <= SAMPLE_SHIFT_BUDGET;
+    const staysFine = nearestSampleDistance(dropped, inst) <= SAMPLE_SHIFT_BUDGET;
+    if (staysFine || !wasFine) drop = -12;
+  }
+  const midi = undropped + drop;
 
   let gain = inst.gainTrim * (0.85 + 0.5 * weight);
 
@@ -86,14 +125,21 @@ export function mapChunk(
   ];
 
   // Very large arrivals get a sub-octave underneath: still one perceptual
-  // hit, but with real bottom end.
+  // hit, but with real bottom end. Same budget guard as the drop above —
+  // skip only if it would newly break the budget (0015 tuning pass: bass's
+  // sub-octave at low degrees reached -20 semitones from its lowest sample).
   if (weight > 0.8) {
-    notes.push({
-      atSec: chunk.at,
-      midi: midi - 12,
-      gain: gain * 0.55,
-      bright: 1,
-    });
+    const subMidi = midi - 12;
+    const midiFine = nearestSampleDistance(midi, inst) <= SAMPLE_SHIFT_BUDGET;
+    const subFine = nearestSampleDistance(subMidi, inst) <= SAMPLE_SHIFT_BUDGET;
+    if (subFine || !midiFine) {
+      notes.push({
+        atSec: chunk.at,
+        midi: subMidi,
+        gain: gain * 0.55,
+        bright: 1,
+      });
+    }
   }
 
   return {
