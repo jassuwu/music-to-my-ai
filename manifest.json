@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Music to My AI",
+  "name": "music to my ai",
   "version": "0.1.0",
-  "description": "Streaming AI replies play as music, one note at a time.",
+  "description": "your ai talks, this plays it. one note per chunk of the reply, nothing to configure.",
   "permissions": ["storage"],
   "content_scripts": [
     {
@@ -53,7 +53,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Music to My AI",
+    "default_title": "music to my ai",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png",
@@ -67,7 +67,7 @@
   "commands": {
     "toggle-mute": {
       "suggested_key": { "default": "Ctrl+Shift+M", "mac": "Command+Shift+M" },
-      "description": "Mute or unmute Music to My AI"
+      "description": "mute or unmute music to my ai"
     }
   }
 }
