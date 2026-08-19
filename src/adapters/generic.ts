@@ -9,9 +9,13 @@ import { QUIESCENCE_MS } from "./shared";
  * from the one thing every streaming UI shares: some element's text grows,
  * repeatedly, in one place. The rules that make that safe on an unknown DOM:
  *
- *  - Adopt the growing block silently and only emit from the SECOND growth
- *    onward. A one-shot DOM change — the user's own message posting, a toast,
- *    a tooltip — grows once and never sounds.
+ *  - A stream must PROVE itself before anything sounds: the same element has
+ *    to grow three times within two seconds, never shrinking in between.
+ *    Real streams clear that bar in under a second (measured 4.8-6.6
+ *    growths/sec); the things that must stay silent structurally cannot —
+ *    one-shot changes (the user's own message, toasts, tooltips) grow once,
+ *    relative timestamps grow once a minute, and animated "..." loaders
+ *    shrink every cycle, which resets the proof.
  *  - Ignore anything inside the composer (contenteditable, inputs), controls,
  *    and navigation. Typing must never play.
  *  - Prefer a message-shaped ancestor as the growth target so the whole reply
@@ -33,6 +37,10 @@ const BLOCK =
   '[class*="message"], [class*="response"], [class*="assistant"],' +
   '[class*="markdown"], [class*="prose"], [data-message-id], article, li';
 
+/** Growth events required, and the window they must land in, to confirm a stream. */
+const CONFIRM_EVENTS = 3;
+const CONFIRM_WINDOW_S = 2;
+
 export function makeGenericAdapter(site: Site): Adapter {
   return {
     id: site.id,
@@ -47,11 +55,12 @@ export function makeGenericAdapter(site: Site): Adapter {
 
       let target: Element | null = null;
       let lastLength = 0;
-      let emitted = false;
+      let confirmed = false;
+      let pending: number[] = [];
       let endTimer: ReturnType<typeof setTimeout> | undefined;
 
       const reset = (): void => {
-        if (emitted) {
+        if (confirmed) {
           try {
             handlers.onStreamEnd("quiescence");
           } catch {
@@ -59,7 +68,8 @@ export function makeGenericAdapter(site: Site): Adapter {
           }
         }
         target = null;
-        emitted = false;
+        confirmed = false;
+        pending = [];
       };
 
       const armQuiescence = (): void => {
@@ -81,10 +91,10 @@ export function makeGenericAdapter(site: Site): Adapter {
           if (!grewIn) return;
 
           if (target && !target.contains(grewIn)) {
-            // Growth somewhere else. Before the target has ever sounded it was
-            // a guess, so re-adopt; after that, stay locked — the current
+            // Growth somewhere else. Before the target has proved itself it
+            // was a guess, so re-adopt; after that, stay locked — the current
             // stream ends by quiescence first, then the next one is adopted.
-            if (emitted) return;
+            if (confirmed) return;
             target = null;
           }
 
@@ -93,17 +103,37 @@ export function makeGenericAdapter(site: Site): Adapter {
             // Adopt at the current length without emitting: this swallows the
             // arrival burst, which is how one-shot changes stay silent.
             lastLength = (target.textContent ?? "").length;
+            pending = [];
             armQuiescence();
             return;
           }
 
           const text = target.textContent ?? "";
           const delta = text.length - lastLength;
+          if (delta < 0 && !confirmed) {
+            // Streams never shrink. An unconfirmed target that does is churn
+            // (an animated "..." loader, a re-rendering widget): start over.
+            lastLength = text.length;
+            pending = [];
+            return;
+          }
           if (delta <= 0) return;
 
           const added = text.slice(lastLength);
           lastLength = text.length;
-          emitted = true;
+
+          if (!confirmed) {
+            const at = now();
+            pending = pending.filter((t) => at - t < CONFIRM_WINDOW_S);
+            pending.push(at);
+            if (pending.length < CONFIRM_EVENTS) {
+              // Not yet proven: swallow this growth. Costs under a second of
+              // a real stream's intro; buys silence from everything else.
+              armQuiescence();
+              return;
+            }
+            confirmed = true;
+          }
 
           handlers.onChunk({
             text: added,
