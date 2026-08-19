@@ -2,7 +2,7 @@
 id: 16
 title: Visual identity
 labels: [wayfinder:prototype]
-status: open
+status: closed
 assignee: jass
 blocked-by: []
 ---
@@ -71,4 +71,18 @@ Candidates weighed for the steal:
 
 Landed: the popup is a white iPod. Dark-bezel screen with a bluish LCD; status bar with "n of 6", a view title, and a full battery (it's a toy). Now Playing view: the voice as the track, the two sites as the artist line (click to strike one through), and the iPod volume bar with speaker glyphs. MENU flips to a Voices list with a checkmark. The click wheel does everything: ⏮/⏭ step voices with audition, ⏯ mutes — the LCD backlight goes off, the truest "sound is off" an iPod can say — the center button replays the voice, and dragging around the wheel sweeps volume, one full turn for the whole range, with keyboard arrows as the accessible path. The icon is the white iPod face and reads at 16px. The engraving under the wheel says `aux`.
 
-**Open pending the user's eyes.**
+## Resolution
+
+Fifth pass, and the user called the whole game: "this is not working out. let's simplicity maxx."
+
+The pattern across all four rejected passes is that each one was a costume — panel, comb, halo, iPod. The rejections were never about palette or reference choice; they were about the presence of a costume at all. So the resolution is to stop designing.
+
+**The identity is the absence of one.** The popup is native controls in the system font, styled by the browser: six radio buttons for the voices, an unstyled range input for volume, two checkboxes for the sites, a mute checkbox with the shortcut beside it. `color-scheme: light dark` makes both themes correct for free. No wordmark inside the popup, no custom widgets, no animation. The only non-default behavior is functional: picking a voice plays it. The whole surface is four sections and hairline separators, 240px wide.
+
+**The name stays Aux** — three letters is already simplicity-maxxed, and it says what the product does.
+
+**The icon is a plain white eighth note on a dark rounded tile.** The original question in this ticket said "not a plain music note"; that constraint belonged to the identity-building era this pass ends. The plain note is the most honest mark for "this makes sound", it is monochrome so it sits on light and dark toolbars alike, and it reads at 16px (verified by pixel dump).
+
+The four costumes remain in git history and in the passes above, as the record of why this is the answer.
+
+Closed as resolved; if the user's eyes disagree, it reopens like anything else.

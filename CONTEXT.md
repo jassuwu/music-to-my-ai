@@ -4,7 +4,7 @@ Glossary for Aux — a browser extension that turns streaming LLM responses into
 
 ## Glossary
 
-- **Aux** — the product's name, as in "pass the aux": the extension hands your AI the aux cord, and the reply plays as it streams. The identity is stolen, not invented — the popup is an iPod (click wheel, Now Playing screen, backlight-off mute) and the icon is the white iPod face.
+- **Aux** — the product's name, as in "pass the aux": the extension hands your AI the aux cord, and the reply plays as it streams. There is no visual identity beyond the name: the popup is native controls in the system font, and the icon is a plain white note on a dark tile.
 - **Sonification** — turning the arrival of streamed response text into sound in real time.
 - **Stream** — one assistant response while it is still growing on the page.
 - **Chunk** — **one MutationObserver callback in which the Stream's text grew** — not one mutation record, and not a model token. Coalescing at the callback boundary is what makes the rate playable: measured live at 4.8/sec on claude.ai and 6.6/sec on chatgpt.com, where per-record firing would burst dozens of notes in a single millisecond. Chunk size varies wildly (median 3–33 chars, up to 5,405 when a code block flushes).
