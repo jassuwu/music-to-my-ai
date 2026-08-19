@@ -3,7 +3,7 @@ id: 14
 title: Popup, settings and mute shortcut
 labels: [wayfinder:task]
 status: open
-assignee:
+assignee: jass
 blocked-by: [10]
 ---
 

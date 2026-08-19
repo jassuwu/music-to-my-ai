@@ -2,7 +2,7 @@
 id: 12
 title: Site adapters for claude.ai and chatgpt.com
 labels: [wayfinder:task]
-status: open
+status: closed
 assignee: jass
 blocked-by: [10]
 ---
@@ -21,3 +21,11 @@ Task. Implement `src/adapters/` against the contract measured in [Live DOM verif
 ## Implementation note
 
 Landed: `adapters/shared.ts` holds the observation logic both sites share, with per-site files for claude.ai (uses the confirmed `data-is-streaming` false-flip as a fast-path end signal) and chatgpt.com (quiescence only — the stop button proved untrustworthy). Growth is measured from the assistant element's own text length, which structurally excludes the composer that the skeleton's generic observer was picking up. Both adapters swallow their own exceptions so a site redesign degrades to silence. **Open pending verification on both live sites.**
+
+## Resolution
+
+Verified live on claude.ai. Both adapters observe the prose node of the active assistant message, coalesce one Chunk per callback, ignore control-only mutations, and adopt a baseline when the active message changes rather than reporting the existing text as one enormous Chunk.
+
+Three bugs were caught by live use and fixed before closing: the composer was being observed (the user's typing arrived as 1-char Chunks); action buttons and hover tooltips inside the message wrapper counted as arriving text; and claude.ai's fallback selectors ran even while nothing was streaming, so `data-is-streaming` is now authoritative with fallbacks reserved for a redesign.
+
+Chunk cadence on a long code-heavy answer was steady 28-41 chars at roughly 7/sec, matching what live measurement predicted. Streams end cleanly.
