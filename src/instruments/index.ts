@@ -52,12 +52,8 @@ export const INSTRUMENTS: readonly InstrumentDefinition[] = [
   define("kalimba", "Kalimba", { base: 69, reverb: 0.32, release: 0.9, gainTrim: 2.17 }),
   define("piano", "Piano", { base: 60, reverb: 0.25, release: 1.1, gainTrim: 1.16 }),
   define("acoustic-guitar", "Acoustic guitar", { base: 57, reverb: 0.22, release: 1, gainTrim: 0.89 }),
-  define("electric-guitar", "Electric guitar", { base: 57, reverb: 0.3, release: 1.2, gainTrim: 0.84 }),
   define("bass", "Bass", { base: 40, reverb: 0.18, release: 0.9, gainTrim: 0.71 }),
   define("harp", "Harp", { base: 72, reverb: 0.45, release: 1.4, gainTrim: 1.07 }),
-  // Pizzicato, not bowed — a bowed note's character is its sustain, which
-  // one-shot triggering cannot represent.
-  define("violin", "Violin (pizzicato)", { base: 64, reverb: 0.3, release: 0.8, gainTrim: 0.72 }),
   define("sitar", "Sitar", { base: 62, reverb: 0.35, release: 1.3, gainTrim: 1.26 }),
 ];
 
