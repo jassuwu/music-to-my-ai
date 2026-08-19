@@ -33,7 +33,7 @@ export const chatgptAdapter: Adapter = {
       {
         root,
         activeMessage,
-        onDebug: (m) => console.log(`[plainsong] ${m}`),
+        onDebug: (m) => console.log(`[music-to-my-ai] ${m}`),
       },
       handlers,
       now,
