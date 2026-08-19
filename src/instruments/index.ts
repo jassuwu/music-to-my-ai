@@ -65,24 +65,32 @@ function define(
 }
 
 export const INSTRUMENTS: readonly InstrumentDefinition[] = [
+  // Trims are the geometric mean of the two 0015 measurements: single-note
+  // (base register) and walk-weighted (ceiling register). The engine now
+  // halves the walk's degree between replies, so a session oscillates
+  // between those registers instead of parking at the top; each measurement
+  // alone would be wrong half the time. Releases for piano/sitar/harp are
+  // shortened from 1.1/1.3/1.4 so tails stay near ~6 simultaneous voices at
+  // the measured 6.6 chunks/sec (0015 overlap table).
+  //
   // The default: warm, rounded, and the one that won the voicing prototype.
-  // 0015: single-note -38.71dB -> walk-weighted -41.82dB, trim 2.17 -> 3.10.
-  define("kalimba", "Kalimba", { base: 69, reverb: 0.32, release: 0.9, gainTrim: 3.1 }),
-  // 0015: single-note -33.26dB -> walk-weighted -38.82dB, trim 1.16 -> 2.19.
-  define("piano", "Piano", { base: 60, reverb: 0.25, release: 1.1, gainTrim: 2.19 }),
-  // 0015: single-note -31.01dB -> walk-weighted -37.96dB, trim 0.89 -> 1.99.
-  define("acoustic-guitar", "Acoustic guitar", { base: 57, reverb: 0.22, release: 1, gainTrim: 1.99 }),
-  // 0015: single-note -28.99dB -> walk-weighted -29.18dB, trim 0.71 -> 0.72
-  // (bass's walk mostly stays inside the sample range, so this barely moved).
+  // 0015: single-note -38.71dB, walk-weighted -41.82dB; trims 2.17 / 3.10.
+  define("kalimba", "Kalimba", { base: 69, reverb: 0.32, release: 0.9, gainTrim: 2.6 }),
+  // 0015: single-note -33.26dB, walk-weighted -38.82dB; trims 1.16 / 2.19.
+  define("piano", "Piano", { base: 60, reverb: 0.25, release: 0.95, gainTrim: 1.6 }),
+  // 0015: single-note -31.01dB, walk-weighted -37.96dB; trims 0.89 / 1.99.
+  define("acoustic-guitar", "Acoustic guitar", { base: 57, reverb: 0.22, release: 1, gainTrim: 1.33 }),
+  // 0015: single-note -28.99dB, walk-weighted -29.18dB; trims 0.71 / 0.72
+  // (bass's walk mostly stays inside the sample range, so it barely moved).
   define("bass", "Bass", { base: 40, reverb: 0.18, release: 0.9, gainTrim: 0.72 }),
-  // 0015: single-note -32.58dB -> walk-weighted -47.36dB, trim 1.07 -> 5.86.
-  // Largest correction in the roster: harp's base (72) plus the walk's high
-  // degrees push well past the top sample (84) more than any other
-  // instrument (see register-sanity table, +19st at degree 13) — most
-  // walked notes are heavily pitched up and read much quieter as a result.
-  define("harp", "Harp", { base: 72, reverb: 0.45, release: 1.4, gainTrim: 5.86 }),
-  // 0015: single-note -33.98dB -> walk-weighted -39.75dB, trim 1.26 -> 2.44.
-  define("sitar", "Sitar", { base: 62, reverb: 0.35, release: 1.3, gainTrim: 2.44 }),
+  // 0015: single-note -32.58dB, walk-weighted -47.36dB; trims 1.07 / 5.86.
+  // Largest register spread in the roster: harp's base (72) plus the walk's
+  // high degrees push well past the top sample (84, +19st at degree 13), so
+  // its two measurements disagree by ~15dB and the mean is the roughest
+  // compromise here — first candidate to adjust if it sticks out by ear.
+  define("harp", "Harp", { base: 72, reverb: 0.45, release: 1.15, gainTrim: 2.5 }),
+  // 0015: single-note -33.98dB, walk-weighted -39.75dB; trims 1.26 / 2.44.
+  define("sitar", "Sitar", { base: 62, reverb: 0.35, release: 1.05, gainTrim: 1.75 }),
 ];
 
 export const DEFAULT_INSTRUMENT_ID = "kalimba";
