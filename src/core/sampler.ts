@@ -16,8 +16,19 @@ export class Sampler {
     private readonly ctx: AudioContext,
     private readonly master: GainNode,
   ) {
+    // Notes overlap: at ~7 chunks/sec with a 1s release, a dozen can sound at
+    // once, and reverb sits on top of that. A limiter before the master keeps
+    // a fast flood from clipping without touching individual notes.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -6;
+    limiter.knee.value = 3;
+    limiter.ratio.value = 12;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.15;
+    limiter.connect(master);
+
     this.dry = ctx.createGain();
-    this.dry.connect(master);
+    this.dry.connect(limiter);
 
     // Procedural hall impulse — no impulse-response file to ship.
     const verb = ctx.createConvolver();
@@ -33,7 +44,7 @@ export class Sampler {
 
     this.verbSend = ctx.createGain();
     this.verbSend.connect(verb);
-    verb.connect(master);
+    verb.connect(limiter);
   }
 
   /** Decode every note of an instrument once, so switching is instant. */
