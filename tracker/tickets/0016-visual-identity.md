@@ -56,4 +56,19 @@ The working title "Music to My Agents" is retired. The repo directory keeps the 
 
 Fixed constraints honoured, not relitigated: Direct mapping, kalimba default, the 6-voice roster, the ticket-0004 control set (voice, volume, per-site toggles, mute shortcut, nothing else), 288px popup, `prefers-reduced-motion`, no in-page UI.
 
+### Fourth pass: steal, don't invent
+
+Before seeing Halo in situ the user redirected again, and named the actual method error: don't come up with something from scratch — play off something that exists, steal a UI that makes sense for this kind of extension. And drop the divine bias; "divine" was one word in a longer ask, and Halo went all in on it.
+
+Candidates weighed for the steal:
+
+- **iPod click wheel** — the control set maps 1:1 with nothing invented. Previous/next steps through the voices, play/pause is mute, dragging around the wheel is volume (what the original wheel did), MENU is the voices list, the status bar counts "3 of 6". **Winner: the theft is structural, not cosmetic.**
+- *Winamp* — maximal dev nostalgia, but its controls (EQ, playlist, spectrum) don't correspond to ours; it would be another skin job, the exact failure of pass one.
+- *Music box with punched strip* — conceptually the aptest (the stream is a punched strip through a comb), but pass two proved bars-in-a-well read as settings.
+- *Braun/Rams radio* — tasteful, less recognizable, colder.
+
+**The name is Aux**, as in "pass the aux": the extension hands your AI the aux cord. One syllable, plain, and it says what the product does. Halo is retired after one day; its rationale and runners-up stay recorded above.
+
+Landed: the popup is a white iPod. Dark-bezel screen with a bluish LCD; status bar with "n of 6", a view title, and a full battery (it's a toy). Now Playing view: the voice as the track, the two sites as the artist line (click to strike one through), and the iPod volume bar with speaker glyphs. MENU flips to a Voices list with a checkmark. The click wheel does everything: ⏮/⏭ step voices with audition, ⏯ mutes — the LCD backlight goes off, the truest "sound is off" an iPod can say — the center button replays the voice, and dragging around the wheel sweeps volume, one full turn for the whole range, with keyboard arrows as the accessible path. The icon is the white iPod face and reads at 16px. The engraving under the wheel says `aux`.
+
 **Open pending the user's eyes.**
