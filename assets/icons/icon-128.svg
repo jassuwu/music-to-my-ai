@@ -1,17 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- Sibling, not twin: jass.gg's tab mark is the lime square with his `j`.
-       This tool keeps his system — the invariant lime (#d4fd80), the ink,
-       the square — but carries its own glyph: the 3.5mm aux plug the name
-       comes from. Fills only, no transforms: MSVG drops strokes without
-       explicit opacity and mangles rotate(a cx cy). -->
+  <!-- Music to My AI: the reply becomes music. An ink speech bubble on
+       jass.gg's invariant lime, the note knocked out in the same lime.
+       Square corners (nothing on jass.gg is rounded); fills only (MSVG
+       drops strokes and mangles rotate). -->
   <rect width="128" height="128" fill="#d4fd80"/>
-  <!-- tip -->
-  <path d="M56 44 L56 28 Q56 16 64 16 Q72 16 72 28 L72 44 Z" fill="#0a0a0a"/>
-  <!-- sleeve -->
-  <rect x="56" y="44" width="16" height="34" fill="#0a0a0a"/>
-  <!-- insulator bands: the lime showing through is what says TRS -->
-  <rect x="54.5" y="47" width="19" height="6" fill="#d4fd80"/>
-  <rect x="54.5" y="59" width="19" height="6" fill="#d4fd80"/>
-  <!-- barrel -->
-  <rect x="49" y="78" width="30" height="34" rx="4" fill="#0a0a0a"/>
+  <rect x="20" y="24" width="88" height="60" fill="#0a0a0a"/>
+  <path d="M36 84 L54 84 L36 105 Z" fill="#0a0a0a"/>
+  <!-- the note, in lime -->
+  <ellipse cx="57" cy="67" rx="9.5" ry="7" fill="#d4fd80"/>
+  <rect x="63" y="37" width="5" height="30" fill="#d4fd80"/>
+  <path d="M68 37 q11 4.5 8.5 19 q-1.5 -9.5 -8.5 -13.5 z" fill="#d4fd80"/>
 </svg>
