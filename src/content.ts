@@ -10,7 +10,7 @@ import { DEFAULT_INSTRUMENT_ID, getInstrument } from "./instruments";
  * engine, and keeps both in step with the user's settings.
  */
 
-const LOG = "[plainsong]";
+const LOG = "[music-to-my-ai]";
 
 interface Settings {
   muted: boolean;
