@@ -39,7 +39,7 @@ export const claudeAdapter: Adapter = {
         root,
         activeMessage,
         hasEnded: (el) => el.getAttribute("data-is-streaming") === "false",
-        onDebug: (m) => console.log(`[music-to-my-agents] ${m}`),
+        onDebug: (m) => console.log(`[plainsong] ${m}`),
       },
       handlers,
       now,
