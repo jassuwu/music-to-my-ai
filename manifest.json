@@ -3,6 +3,7 @@
   "name": "music to my ai",
   "version": "1.0.0",
   "description": "your ai talks, this plays it. one note per chunk of the reply, nothing to configure.",
+  "homepage_url": "https://jassuwu.github.io/music-to-my-ai",
   "permissions": ["storage"],
   "content_scripts": [
     {
