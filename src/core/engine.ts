@@ -66,7 +66,12 @@ export class Engine {
         release: this.instrument.release,
       });
     }
-    this.state = { ...initMapping(), degree: base };
+    // Carry half the walked height into the next reply instead of all of it.
+    // The walk climbs on average and reflects at its top wall, so carrying
+    // degree whole meant long sessions parked an octave or two above base
+    // (the 0015 measurement). Halving keeps continuity between replies but
+    // lets each one start lower and climb again.
+    this.state = { ...initMapping(), degree: Math.floor(base / 2) };
   }
 
   private drain(): void {
