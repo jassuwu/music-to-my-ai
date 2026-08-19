@@ -17,3 +17,9 @@ Task. Stand up the runnable shell decided in [Extension scaffolding decisions](0
 - A content script that unlocks an `AudioContext` on the first trusted gesture and `console.log`s a line per detected Chunk — proving injection, permissions and the unlock path end to end.
 
 Done when the extension loads unpacked and logs Chunks on both sites.
+
+## Implementation note
+
+Code is landed and building: MV3 manifest (both sites, `web_accessible_resources` for samples, popup, mute command), bun-only build emitting unhashed IIFE bundles with sourcemaps, `src/core/types.ts` declaring the Chunk/Adapter/Note/InstrumentDefinition contracts, gesture-based AudioContext unlock, and a content script that logs one line per Chunk while coalescing per observer callback. Typecheck is clean.
+
+**Still open pending verification**, because the acceptance criterion is behavioural: the extension must be loaded unpacked from `dist/` and observed logging Chunks on both sites. The chunk detection here is a deliberately generic placeholder — real per-site selectors, the 900ms quiescence rule and defensive fallbacks arrive with [Site adapters](0012-site-adapters.md).
