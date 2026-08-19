@@ -31,9 +31,14 @@ export interface Adapter {
   matches(url: string): boolean;
   /**
    * Begin observing. Returns a teardown function.
+   *
+   * `now` is injected rather than chosen by the adapter: Chunk times must be on
+   * the same clock the audio scheduler uses, and adapters know nothing about
+   * AudioContext.
+   *
    * Adapters must fail silent — never throw into the host page.
    */
-  start(handlers: AdapterHandlers): () => void;
+  start(handlers: AdapterHandlers, now: () => number): () => void;
 }
 
 export interface AdapterHandlers {
