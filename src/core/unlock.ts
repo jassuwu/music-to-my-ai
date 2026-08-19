@@ -1,37 +1,32 @@
 /**
  * Chrome will not start an AudioContext until the page has seen a real user
- * gesture. In practice the user's own click or Enter to submit a prompt
- * arrives well before any text streams back, so we simply wait for it.
+ * gesture. Creating one earlier "works" — it starts suspended and can be
+ * resumed later — but Chrome logs an autoplay warning every single page load,
+ * so the context is instead created *inside* the gesture, which is the pattern
+ * MDN recommends and which produces no warning at all.
  *
- * If no gesture ever arrives (page reloaded mid-stream, response resumed on
- * load) we stay silent and show nothing — the state self-heals the moment the
- * user types.
+ * In practice the user's own click or Enter to submit a prompt arrives well
+ * before any text streams back. If a page is loaded mid-stream and no gesture
+ * ever comes, we simply stay silent — no banner, no nag. The state self-heals
+ * the moment the user types.
  */
-export function createUnlockedContext(): {
-  ctx: AudioContext;
-  ready: Promise<void>;
-} {
-  const ctx = new AudioContext();
-  const ready = new Promise<void>((resolve) => {
-    if (ctx.state === "running") return resolve();
+export function whenUnlocked(): Promise<AudioContext> {
+  // If the document has already been interacted with — a reload after typing,
+  // a click that navigated here — we can start immediately.
+  if (navigator.userActivation?.hasBeenActive) {
+    return Promise.resolve(new AudioContext());
+  }
+
+  return new Promise((resolve) => {
+    const events = ["pointerdown", "keydown"] as const;
 
     const unlock = () => {
-      void ctx.resume().then(() => {
-        if (ctx.state === "running") {
-          detach();
-          resolve();
-        }
-      });
+      for (const type of events) document.removeEventListener(type, unlock, true);
+      resolve(new AudioContext());
     };
-    const detach = () => {
-      for (const type of ["pointerdown", "keydown"] as const) {
-        document.removeEventListener(type, unlock, true);
-      }
-    };
-    for (const type of ["pointerdown", "keydown"] as const) {
+
+    for (const type of events) {
       document.addEventListener(type, unlock, true);
     }
   });
-
-  return { ctx, ready };
 }
