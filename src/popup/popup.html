@@ -4,212 +4,35 @@
     <meta charset="utf-8" />
     <title>Aux</title>
     <style>
-      :root {
-        --face-hi: #fbfbfd;
-        --face-lo: #efeff2;
-        --edge: #d7d7dc;
-        --wheel: #e7e7ea;
-        --wheel-lo: #dfdfe4;
-        --wheel-text: #96969e;
-        --center: #f7f7fa;
-        --bezel: #1a1a1e;
-        --lcd-hi: #f4f8fb;
-        --lcd-lo: #e4ebf2;
-        --ink: #14181d;
-        --ink-dim: #7c8894;
-        --blue: #3e6db5;
-        --blue-hi: #6e96d6;
-
-        --screen-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      }
-      * { box-sizing: border-box; }
-
+      :root { color-scheme: light dark; }
       body {
-        width: 288px; margin: 0;
-        background: linear-gradient(var(--face-hi), var(--face-lo));
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-        font-family: var(--screen-font);
-        user-select: none;
+        width: 240px; margin: 0;
+        font: 13px/1.5 system-ui, sans-serif;
       }
-      main { padding: 16px 22px 14px; text-align: center; }
-
-      /* --- the screen ------------------------------------------------------ */
-      .screenwrap {
-        background: var(--bezel); border-radius: 9px; padding: 6px;
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(255, 255, 255, 0.8);
+      section { padding: 10px 14px; }
+      section + section {
+        border-top: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
       }
-      .lcd {
-        border-radius: 4px; overflow: hidden; text-align: left;
-        background: linear-gradient(var(--lcd-hi), var(--lcd-lo));
-        color: var(--ink);
-        transition: background 0.35s, color 0.35s;
-      }
-      .statusbar {
-        display: flex; align-items: center;
-        height: 19px; padding: 0 7px; gap: 6px;
-        background: linear-gradient(#edf3f9, #cbd9e8);
-        border-bottom: 1px solid #a9bacd;
-        font-size: 10px; font-weight: 700;
-        transition: background 0.35s;
-      }
-      #status-left { width: 44px; flex: none; }
-      #status-title { flex: 1; text-align: center; }
-      .battery {
-        flex: none; width: 20px; height: 9px; position: relative;
-        border: 1px solid #6b7886; border-radius: 2px;
-      }
-      .battery::after {
-        content: ""; position: absolute; right: -3px; top: 2px;
-        width: 2px; height: 3px; background: #6b7886; border-radius: 0 1px 1px 0;
-      }
-      .battery-fill {
-        position: absolute; inset: 1px; border-radius: 1px;
-        background: linear-gradient(#9ed48f, #5aa84c);
-      }
-
-      .view { min-height: 118px; padding: 10px 12px 12px; }
-
-      /* now playing */
-      #track {
-        margin-top: 16px; text-align: center;
-        font-size: 21px; font-weight: 700; letter-spacing: -0.01em;
-      }
-      .artist { margin-top: 5px; text-align: center; font-size: 11px; }
-      .site {
-        background: none; border: none; padding: 0 4px; cursor: pointer;
-        font: inherit; font-weight: 500; color: var(--ink);
-      }
-      .site[aria-pressed="false"] { color: var(--ink-dim); text-decoration: line-through; }
-      .site:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-      .sep { color: var(--ink-dim); }
-
-      .volrow { display: flex; align-items: center; gap: 7px; margin-top: 22px; }
-      .spk { flex: none; width: 11px; height: 11px; fill: var(--ink-dim); }
-      .spk.big { width: 14px; height: 14px; }
-      .volbar {
-        flex: 1; height: 8px; border-radius: 4px;
-        background: #ffffff; border: 1px solid #b3c1cf; overflow: hidden;
-      }
-      #volfill {
-        height: 100%; width: 60%;
-        background: linear-gradient(var(--blue-hi), var(--blue));
-      }
-
-      /* voices list */
-      .row {
-        display: flex; align-items: center; justify-content: space-between;
-        width: 100%; padding: 2px 6px; border: none; border-radius: 3px;
-        background: none; cursor: pointer; text-align: left;
-        font: inherit; font-size: 13px; font-weight: 600; color: var(--ink);
-        line-height: 17px;
-      }
-      .row:hover { background: rgba(62, 109, 181, 0.14); }
-      .row .check { color: var(--blue); font-weight: 700; }
-      .row:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
-
-      /* backlight off = muted */
-      body.off .lcd { background: linear-gradient(#c9cfc6, #b9bfb6); color: #4c514b; }
-      body.off .statusbar {
-        background: linear-gradient(#c3c9c0, #adb3aa); border-bottom-color: #99a096;
-      }
-      body.off .battery-fill { background: #8a9187; }
-      body.off #volfill { background: #7c837a; }
-      body.off .volbar { background: #c1c7be; border-color: #99a096; }
-      body.off .site { color: inherit; }
-      body.off .row .check { color: #4c514b; }
-
-      /* --- the click wheel -------------------------------------------------- */
-      .wheelwrap { margin-top: 18px; display: flex; justify-content: center; }
-      .wheel {
-        position: relative; width: 178px; height: 178px; border-radius: 50%;
-        background: radial-gradient(circle at 50% 40%, #efeff2, var(--wheel-lo));
-        box-shadow:
-          inset 0 1px 2px rgba(255, 255, 255, 0.9),
-          inset 0 -1px 2px rgba(0, 0, 0, 0.07),
-          0 1px 3px rgba(0, 0, 0, 0.08);
-        touch-action: none;
-      }
-      .wheel:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
-
-      .wbtn {
-        position: absolute; background: none; border: none; cursor: pointer;
-        color: var(--wheel-text); font-family: var(--screen-font); padding: 4px 8px;
-      }
-      .wbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 0; border-radius: 4px; }
-      .wbtn:active { color: #6d6d76; }
-      .wbtn.menu {
-        top: 9px; left: 50%; transform: translateX(-50%);
-        font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
-      }
-      .wbtn.prev  { left: 8px;  top: 50%; transform: translateY(-50%); font-size: 13px; }
-      .wbtn.next  { right: 8px; top: 50%; transform: translateY(-50%); font-size: 13px; }
-      .wbtn.pause { bottom: 9px; left: 50%; transform: translateX(-50%); font-size: 13px; }
-
-      .centerbtn {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 66px; height: 66px; border-radius: 50%;
-        border: none; cursor: pointer;
-        background: radial-gradient(circle at 50% 38%, #fbfbfd, var(--center));
-        box-shadow:
-          inset 0 1px 2px rgba(0, 0, 0, 0.09),
-          inset 0 -1px 1px rgba(255, 255, 255, 0.85);
-      }
-      .centerbtn:active { box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.18); }
-      .centerbtn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-
-      /* --- the face -------------------------------------------------------- */
-      .engrave {
-        margin-top: 14px;
-        font-size: 12px; font-weight: 500; letter-spacing: 0.1em;
-        color: #b9b9c0;
-      }
-      .hint { margin-top: 3px; font-size: 9px; color: #c8c8ce; letter-spacing: 0.04em; }
-      .hint kbd { font: inherit; }
-
-      @media (prefers-reduced-motion: reduce) {
-        .lcd, .statusbar { transition: none; }
+      label { display: flex; align-items: center; gap: 8px; }
+      .voices label, .sites label { padding: 2px 0; }
+      input { margin: 0; }
+      input[type="range"] { flex: 1; }
+      kbd {
+        margin-left: auto;
+        font: 11px system-ui, sans-serif;
+        color: light-dark(rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.5));
       }
     </style>
   </head>
   <body>
-    <main>
-      <div class="screenwrap">
-        <div class="lcd">
-          <div class="statusbar">
-            <span id="status-left">1 of 6</span>
-            <span id="status-title">Now Playing</span>
-            <span class="battery" aria-hidden="true"><span class="battery-fill"></span></span>
-          </div>
-
-          <div class="view" id="view-now">
-            <div id="track">Kalimba</div>
-            <div class="artist" id="sites"></div>
-            <div class="volrow">
-              <svg class="spk" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4h2.4L7 1v10L3.4 8H1z"/></svg>
-              <div class="volbar" aria-hidden="true"><div id="volfill"></div></div>
-              <svg class="spk big" viewBox="0 0 14 12" aria-hidden="true"><path d="M1 4h2.4L7 1v10L3.4 8H1z"/><path d="M9 3.2a3.4 3.4 0 010 5.6V7.4a2 2 0 000-2.8z"/><path d="M9.6 1a5.6 5.6 0 010 10l-.7-1a4.4 4.4 0 000-8z"/></svg>
-            </div>
-          </div>
-
-          <div class="view" id="view-list" hidden></div>
-        </div>
-      </div>
-
-      <div class="wheelwrap">
-        <div class="wheel" id="wheel" tabindex="0" role="slider"
-             aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60">
-          <button class="wbtn menu"  id="btn-menu">MENU</button>
-          <button class="wbtn prev"  id="btn-prev"  aria-label="Previous voice">&#9198;&#xFE0E;</button>
-          <button class="wbtn next"  id="btn-next"  aria-label="Next voice">&#9197;&#xFE0E;</button>
-          <button class="wbtn pause" id="btn-pause" aria-label="Mute or unmute">&#9199;&#xFE0E;</button>
-          <button class="centerbtn"  id="btn-center" aria-label="Play the chosen voice"></button>
-        </div>
-      </div>
-
-      <div class="engrave">aux</div>
-      <div class="hint"><kbd id="shortcut">&#8984;&#8679;M</kbd> mutes anywhere</div>
-    </main>
-
+    <section class="voices" id="voices"></section>
+    <section>
+      <label>Volume <input type="range" id="volume" min="0" max="100" step="1" /></label>
+    </section>
+    <section class="sites" id="sites"></section>
+    <section>
+      <label><input type="checkbox" id="mute" /> Mute <kbd id="shortcut">⌘⇧M</kbd></label>
+    </section>
     <script src="popup.js"></script>
   </body>
 </html>
