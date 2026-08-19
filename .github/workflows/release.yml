@@ -1,0 +1,43 @@
+# Tag it and it ships. `bun run check` is given the tag, so a tag that
+# disagrees with manifest.json's version fails here rather than becoming a
+# download labelled as a version it isn't.
+#
+#   bun run check                       (locally, after bumping both versions)
+#   git tag v1.1.0 && git push --tags
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+
+      - name: the tag agrees with the manifest
+        run: bun run check ${{ github.ref_name }}
+
+      - name: types
+        run: bun run typecheck
+
+      - run: bun run package
+
+      # gh is already on the runner, so the one workflow that can publish
+      # depends on nothing from the marketplace. The generated notes are the
+      # commits since the last tag; the install line is the part a machine
+      # can't write, and --notes puts it above them.
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" release/*.zip \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            --notes 'unzip it, then load unpacked at `chrome://extensions` with developer mode on. no automatic updates: watch the repo if you want to hear about the next one.'

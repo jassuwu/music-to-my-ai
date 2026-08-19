@@ -19,9 +19,12 @@ six voices, one volume slider, per-site checkboxes, mute with a shortcut (`âŒ˜â‡
 ```
 bun install
 bun run build     # dist/, load unpacked at chrome://extensions
+bun run check     # manifest, sites, samples and versions agree
 bun run package   # a zip anyone can unzip and load unpacked
 bun run site      # dist-site/, the demo page
 ```
+
+releasing is a tag. bump the version in `manifest.json` and `package.json`, push `v1.2.3`, and the workflow builds the zip and cuts the release with it. a tag that disagrees with the manifest fails instead of shipping. ci runs the same checks on every push, and hangs the built zip off each one so a branch can be installed without cloning it.
 
 no bundler framework, no plugins. `bun build` does everything an extension needs. `tracker/` is the decision log, `CONTEXT.md` the glossary, and the git history is a diary that includes the day this thing had four names.
 

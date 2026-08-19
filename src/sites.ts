@@ -1,10 +1,12 @@
 /**
- * The single list of sites Aux runs on. The popup's checkboxes, the default
+ * The single list of sites this runs on. The popup's checkboxes, the default
  * settings, and the adapter registry all derive from here.
  *
  * Keep in sync with manifest.json: content_scripts matches and
  * web_accessible_resources matches are the same hosts, spelled as match
- * patterns (the manifest cannot import this file).
+ * patterns (the manifest cannot import this file). `bun run check` fails if
+ * they ever disagree, so this is a rule with an alarm on it rather than a
+ * comment nobody reads.
  */
 
 export interface Site {

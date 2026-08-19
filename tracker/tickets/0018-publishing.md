@@ -25,8 +25,13 @@ v1 works and the repo is public. Getting it into someone else's browser needs a 
 
 **Vercel hosts it, at music-to-my-ai.jass.gg.** `vercel.json` pins the inputs (bun install, `bun run site`, `dist-site`, no framework preset) so the dashboard and the repo cannot disagree, plus a year-long immutable cache on `/samples/*`, which are content-addressed by name and never change. GitHub Pages was built first and thrown away: it wanted a workflow file, and the repo's own push token has no `workflow` scope.
 
+**Releases are a tag, and CI is four things that only a machine will remember.** `.github/workflows/release.yml` fires on `v*`, hands the tag to `bun run check`, and refuses a tag that disagrees with `manifest.json` — a download labelled as a version it is not is the one release bug that outlives the release. `ci.yml` runs on every push and pull request: the manifest/`src/sites.ts` cross-check, types, both builds, and the zip, with the zip kept as an artifact so a branch can be heard without a clone. `gh` is already on the runner, so the workflow that can publish depends on no third-party action.
+
+**`bun run check` is the test suite this repo can have.** It verifies the things that are true or false in a file: the manifest and `src/sites.ts` list the same hosts, the two manifest match-lists agree, every instrument's samples exist on disk, both version numbers agree. What is left over — adapters against live DOM, whether the mapping feels right — was settled by measurement and by ear in tickets 0006 and 0015, and a unit test asserting a gainTrim is 2.6 would only assert that someone typed 2.6.
+
 ## Open
 
 - The subdomain's DNS record is jass's to add.
 - The page's install link points at `/releases/latest`, so the first release has to exist before that link works.
 - A demo video for twitter is parked. The page is the demo.
+- v1.0.0 was cut by hand before the workflow existed. Every tag after it goes through `release.yml`.

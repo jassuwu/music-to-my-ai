@@ -1,0 +1,44 @@
+# Every push and every pull request. Four steps, all of them things a person
+# would otherwise have to remember: the manifest agreeing with src/sites.ts,
+# the types, both builds compiling, and the zip actually assembling.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+
+      - name: manifest, sites, samples and icons agree
+        run: bun run check
+
+      - name: types
+        run: bun run typecheck
+
+      - name: extension builds
+        run: bun run build
+
+      - name: landing page builds
+        run: bun run site
+
+      - name: zip assembles
+        run: bun run package
+
+      # So a pull request can be installed and heard without a local bun.
+      # 90 days is the default retention; nobody needs a branch build older
+      # than that.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: music-to-my-ai-${{ github.sha }}
+          path: release/*.zip
