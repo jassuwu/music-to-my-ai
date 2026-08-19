@@ -1,19 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <!-- warm night tile -->
-  <rect x="0" y="0" width="128" height="128" rx="28" fill="#0D0A07"/>
-  <!-- ambient glow: layered alpha, no gradients (MSVG-safe) -->
-  <circle cx="64" cy="63" r="54" fill="#E8C170" fill-opacity="0.04"/>
-  <circle cx="64" cy="63" r="45" fill="#E8C170" fill-opacity="0.05"/>
-  <circle cx="64" cy="63" r="38" fill="#E8C170" fill-opacity="0.07"/>
-  <!-- outer ripple: the halo is also a soundwave -->
-  <circle cx="64" cy="63" r="51" fill="none" stroke="#E8C170" stroke-opacity="0.20" stroke-width="2.5"/>
-  <!-- halation under the ring -->
-  <circle cx="64" cy="63" r="34" fill="none" stroke="#E8C170" stroke-opacity="0.28" stroke-width="14"/>
-  <!-- the ring -->
-  <circle cx="64" cy="63" r="34" fill="none" stroke="#E9C36B" stroke-opacity="1" stroke-width="9"/>
-  <!-- molten core of the ring -->
-  <circle cx="64" cy="63" r="34" fill="none" stroke="#FFF0CE" stroke-opacity="0.9" stroke-width="3.5"/>
-  <!-- ember at the heart -->
-  <circle cx="64" cy="63" r="9" fill="#E8C170" fill-opacity="0.12"/>
-  <circle cx="64" cy="63" r="2.5" fill="#FFEFC9" fill-opacity="0.75"/>
+  <rect x="3" y="3" width="122" height="122" rx="28" fill="#D2D2D8"/>
+  <rect x="5" y="5" width="118" height="118" rx="26" fill="#F7F7F9"/>
+  <!-- screen -->
+  <rect x="29" y="22" width="70" height="46" rx="7" fill="#1C1C20"/>
+  <rect x="33" y="26" width="62" height="38" rx="3" fill="#DFE9F2"/>
+  <rect x="34" y="26" width="60" height="9" fill="#C3D4E5"/>
+  <!-- click wheel -->
+  <circle cx="64" cy="93" r="25" fill="#E3E3E8"/>
+  <circle cx="64" cy="93" r="10.5" fill="#D8D8DE"/>
+  <circle cx="64" cy="93" r="9.5" fill="#FAFAFC"/>
 </svg>
