@@ -6,7 +6,21 @@
   "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": ["https://claude.ai/*", "https://chatgpt.com/*"],
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://chatjimmy.ai/*",
+        "https://*.chatjimmy.ai/*",
+        "https://gemini.google.com/*",
+        "https://t3.chat/*",
+        "https://*.t3.chat/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://*.grok.com/*",
+        "https://perplexity.ai/*",
+        "https://*.perplexity.ai/*",
+        "https://chat.mistral.ai/*"
+      ],
       "js": ["content.js"],
       "run_at": "document_idle"
     }
@@ -14,7 +28,21 @@
   "web_accessible_resources": [
     {
       "resources": ["samples/*"],
-      "matches": ["https://claude.ai/*", "https://chatgpt.com/*"]
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://chatjimmy.ai/*",
+        "https://*.chatjimmy.ai/*",
+        "https://gemini.google.com/*",
+        "https://t3.chat/*",
+        "https://*.t3.chat/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://*.grok.com/*",
+        "https://perplexity.ai/*",
+        "https://*.perplexity.ai/*",
+        "https://chat.mistral.ai/*"
+      ]
     }
   ],
   "icons": {
