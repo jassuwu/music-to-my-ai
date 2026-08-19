@@ -3,7 +3,7 @@ id: 10
 title: Build the extension skeleton
 labels: [wayfinder:task]
 status: open
-assignee:
+assignee: jass
 blocked-by: []
 ---
 
