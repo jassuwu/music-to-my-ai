@@ -1,5 +1,6 @@
 import { Sampler } from "../core/sampler";
 import { INSTRUMENTS, DEFAULT_INSTRUMENT_ID } from "../instruments";
+import { SITES, DEFAULT_SITES } from "../sites";
 import type { InstrumentDefinition } from "../core/types";
 
 /**
@@ -21,13 +22,8 @@ const DEFAULTS: Settings = {
   muted: false,
   volume: 0.6,
   instrument: DEFAULT_INSTRUMENT_ID,
-  sites: { claude: true, chatgpt: true },
+  sites: DEFAULT_SITES,
 };
-
-const SITES: Array<{ id: string; label: string }> = [
-  { id: "claude", label: "claude.ai" },
-  { id: "chatgpt", label: "chatgpt.com" },
-];
 
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
@@ -105,8 +101,8 @@ async function main(): Promise<void> {
   );
 
   $("sites").replaceChildren(
-    ...SITES.map(({ id, label }) =>
-      labelledInput("checkbox", id, label, settings.sites[id] !== false, (input) => {
+    ...SITES.map(({ id, host }) =>
+      labelledInput("checkbox", id, host, settings.sites[id] !== false, (input) => {
         save({ sites: { ...settings.sites, [id]: input.checked } });
       }),
     ),
