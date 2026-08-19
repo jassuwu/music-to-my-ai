@@ -10,7 +10,7 @@ import { DEFAULT_INSTRUMENT_ID, getInstrument } from "./instruments";
  * engine, and keeps both in step with the user's settings.
  */
 
-const LOG = "[music-to-my-agents]";
+const LOG = "[plainsong]";
 
 interface Settings {
   muted: boolean;
@@ -80,4 +80,11 @@ async function main(): Promise<void> {
   console.log(`${LOG} ready — ${instrument.label} on ${adapter.id}`);
 }
 
-void main();
+void main().catch((error: unknown) => {
+  // Reloading the extension at chrome://extensions orphans the content
+  // scripts already injected into open tabs; their next chrome.* call throws
+  // "Extension context invalidated". The orphan is dead either way — the
+  // reloaded extension injects a fresh script — so die quietly, not loudly.
+  if (String(error).includes("Extension context invalidated")) return;
+  throw error;
+});
