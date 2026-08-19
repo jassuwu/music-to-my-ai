@@ -4,6 +4,8 @@ your ai talks, this plays it. one note per chunk of the reply, nothing to config
 
 a chrome extension that turns a streaming llm answer into music while it arrives. every piece of text that lands strikes exactly one note. no loops, no backing track, nothing playing alongside the stream. the stream is the instrument.
 
+[hear it before you install it](https://jassuwu.github.io/music-to-my-ai) — the demo on that page runs this repo's engine, not a recording.
+
 ## works on
 
 claude.ai and chatgpt.com have hand-tuned adapters, built by measuring their live dom. chatjimmy, gemini, t3.chat, deepseek, grok, perplexity and mistral share a generic one that makes a stream prove itself before anything sounds: three growths in two seconds, never shrinking. timestamps and loading dots can't fake that. every site gets its own checkbox.
