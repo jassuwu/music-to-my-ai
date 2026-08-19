@@ -35,6 +35,7 @@ await cp("src/popup/popup.html", `${OUT}/popup.html`);
 if (existsSync("assets/samples")) {
   await cp("assets/samples", `${OUT}/samples`, { recursive: true });
 }
+await cp("assets/icons", `${OUT}/icons`, { recursive: true });
 
 console.log(
   `built ${result.outputs.length} bundles -> ${OUT}/  (load unpacked from ${OUT})`,
