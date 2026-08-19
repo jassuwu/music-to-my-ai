@@ -2,7 +2,7 @@
 id: 15
 title: End-to-end tuning pass
 labels: [wayfinder:prototype]
-status: open
+status: closed
 assignee:
 blocked-by: [11, 12, 13, 14]
 ---
@@ -35,3 +35,5 @@ The pass was split honestly: an agent cannot hear, so everything measurable was 
 4. The abort-flourish gap stands as noted: no adapter emits "aborted" today, so threading the reason would be dead code. Revisit only if abort detection ever lands.
 
 The harness remains for anyone who ever wants the sliders. **Close condition: the user uses the extension normally and nothing annoys them.** If something does, the report "instrument X, site Y, what it felt like" is enough to act on.
+
+**Closed** (2026-08-19): the user's verdict after using it — "i think this is an okay v1 tbh." Reopen on any specific complaint.
