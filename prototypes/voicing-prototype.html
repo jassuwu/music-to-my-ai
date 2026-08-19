@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PROTOTYPE — Music to My Agents: voicing the Direct mapping</title>
+<style>
+  :root {
+    --bg: #0e0f13; --panel: #16181f; --panel-2: #1d202a; --line: #2a2e3a;
+    --text: #e7e9ee; --dim: #949aab; --accent: #ffc978;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 48px 24px 96px; background: var(--bg); color: var(--text);
+         font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", sans-serif; }
+  .wrap { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em; color: var(--dim);
+       font-weight: 600; margin: 40px 0 14px; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+         color: #0e0f13; background: var(--accent); padding: 3px 8px; border-radius: 4px;
+         font-weight: 700; margin-bottom: 14px; }
+  .lede { color: var(--dim); max-width: 68ch; margin: 0; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  button { font: inherit; color: var(--text); background: var(--panel-2); border: 1px solid var(--line);
+           border-radius: 8px; padding: 9px 14px; cursor: pointer; text-align: left; }
+  button:hover { border-color: #3d4354; background: #232734; }
+  button.on { background: var(--accent); color: #0e0f13; border-color: var(--accent); font-weight: 600; }
+  button.step { display: block; width: 100%; margin-bottom: 8px; }
+  button.step.done { opacity: .45; }
+  button.step.next { border-color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .voices { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 8px; }
+  .voices b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .voices span { display: block; font-size: 12px; line-height: 1.4; opacity: .75; }
+  .knobs { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+           gap: 16px 22px; margin-top: 4px; }
+  .knob label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+                color: var(--dim); margin-bottom: 6px; }
+  .knob select, .knob input { width: 100%; }
+  .knob select { font: inherit; color: var(--text); background: var(--panel-2);
+                 border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; }
+  input[type=range] { accent-color: var(--accent); }
+  .state { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 14px 20px; }
+  .state dt { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim); }
+  .state dd { margin: 2px 0 0; font-size: 16px; font-variant-numeric: tabular-nums;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .last { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+          font-size: 13px; color: var(--dim); min-height: 22px; }
+  .last b { color: var(--text); font-weight: 500; }
+  #transcript { margin-top: 14px; padding: 14px 16px; background: #0b0c10; border: 1px solid var(--line);
+                border-radius: 8px; min-height: 84px; max-height: 180px; overflow-y: auto;
+                white-space: pre-wrap; font-size: 13.5px; color: #c7ccd8; }
+  #transcript .code { font-family: ui-monospace, monospace; color: var(--accent); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tabs button { padding: 7px 12px; font-size: 13.5px; }
+  .scen-desc { color: var(--dim); font-size: 14px; margin: 0 0 14px; max-width: 70ch; }
+  .scen-desc b { color: var(--text); font-weight: 600; }
+  #unlock { position: fixed; inset: 0; background: rgba(14,15,19,.94); display: flex;
+            align-items: center; justify-content: center; flex-direction: column; gap: 10px;
+            cursor: pointer; z-index: 10; }
+  #unlock p { color: var(--dim); margin: 0; }
+  .recipe { margin-top: 14px; font-family: ui-monospace, monospace; font-size: 12.5px;
+            color: var(--dim); background: #0b0c10; border: 1px solid var(--line);
+            border-radius: 8px; padding: 12px 14px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="unlock">
+  <h1>Click anywhere to enable sound</h1>
+  <p>Browsers only allow audio after a real click — the same unlock the extension will use.</p>
+</div>
+
+<div class="wrap">
+  <span class="tag">Prototype 2 — throwaway</span>
+  <h1>What should a single chunk-hit <em>feel</em> like?</h1>
+  <p class="lede">
+    The mapping is settled: <strong>one sound per chunk, the instant it lands, never smoothed</strong>.
+    That structure is fixed everywhere on this page — only the <strong>voice</strong> changes.
+    The open question is character: the current sound is fine but a bit beepy, and it should feel
+    <strong>nicer, more soothing, maybe upbeat</strong>. Six voices below, plus knobs for the things
+    that actually carry mood — scale colour, register, reverb tail, and how pitch moves.
+    Judge on the <strong>fatigue test</strong>, not the first three notes: the winner is the one you'd
+    still want on the tenth answer of the day.
+  </p>
+
+  <h2>Voice — switch any time, even mid-stream</h2>
+  <div class="voices" id="voicePicker"></div>
+
+  <h2>Knobs — these carry the mood</h2>
+  <div class="panel">
+    <div class="knobs" id="knobs"></div>
+    <div class="recipe" id="recipe"></div>
+  </div>
+
+  <h2>What's happening right now</h2>
+  <div class="panel">
+    <dl class="state" id="statePanel"></dl>
+    <div class="last" id="lastEvent">Nothing yet — start a stream below.</div>
+    <div id="transcript"></div>
+  </div>
+
+  <h2>Free play</h2>
+  <div class="row" id="freePlay"></div>
+
+  <h2>Guided walkthroughs</h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="panel">
+    <p class="scen-desc" id="scenDesc"></p>
+    <div id="scenSteps"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   PURE MODULE — Direct mapping (settled) + voice parameters (the open question).
+   No DOM, no audio nodes, no timers. Returns note descriptions; the shell renders
+   them. Whatever wins here lifts into the extension as data + one function.
+   ========================================================================== */
+
+const SCALES = {
+  minorPent: { label: 'Minor pentatonic', steps: [0, 3, 5, 7, 10] },
+  majorPent: { label: 'Major pentatonic', steps: [0, 2, 4, 7, 9] },
+  lydian:    { label: 'Lydian',           steps: [0, 2, 4, 6, 7, 9, 11] },
+  major6:    { label: 'Major 6th',        steps: [0, 2, 4, 7, 9, 11] }
+};
+
+/* Voice = timbre + envelope + where it sits + how much air around it.
+   partials are [frequencyRatio, gain] pairs — additive synthesis, cheap and precise. */
+const VOICES = {
+  pluck: {
+    label: 'Soft pluck', blurb: 'The current sound, kept for reference. Triangle wave, very short decay.',
+    partials: [[1, 1]], wave: 'triangle', attack: 0.004, decay: 0.18, cutoff: 4200,
+    base: 57, scale: 'minorPent', reverb: 0.12, gain: 0.42, detune: 0
+  },
+  kalimba: {
+    label: 'Kalimba', blurb: 'Warm thumb-piano ping. Woody, rounded, friendly — the safe soothing pick.',
+    partials: [[1, 1], [2.76, 0.22], [5.4, 0.06]], wave: 'sine', attack: 0.004, decay: 0.62, cutoff: 5200,
+    base: 69, scale: 'majorPent', reverb: 0.32, gain: 0.4, detune: 0
+  },
+  musicbox: {
+    label: 'Music box', blurb: 'High, nostalgic, long shimmering tail. The most obviously soothing.',
+    partials: [[1, 1], [3.01, 0.34], [5.9, 0.12]], wave: 'sine', attack: 0.002, decay: 1.5, cutoff: 7000,
+    base: 81, scale: 'majorPent', reverb: 0.5, gain: 0.3, detune: 0
+  },
+  glass: {
+    label: 'Glass', blurb: 'Slow bloom, detuned pair, wide reverb. Ambient and airy rather than percussive.',
+    partials: [[1, 1], [2, 0.28], [3, 0.12]], wave: 'sine', attack: 0.045, decay: 1.7, cutoff: 6000,
+    base: 76, scale: 'lydian', reverb: 0.62, gain: 0.3, detune: 7
+  },
+  marimba: {
+    label: 'Marimba', blurb: 'Short, woody, dry. Lower and punchier — the upbeat, rhythmic option.',
+    partials: [[1, 1], [3.9, 0.3], [9.2, 0.05]], wave: 'sine', attack: 0.003, decay: 0.34, cutoff: 4000,
+    base: 64, scale: 'majorPent', reverb: 0.16, gain: 0.46, detune: 0
+  },
+  rhodes: {
+    label: 'Rhodes', blurb: 'Electric-piano bell. Sweet, jazzy, a bit brighter — upbeat but still warm.',
+    partials: [[1, 1], [2, 0.42], [4, 0.1]], wave: 'sine', attack: 0.006, decay: 0.85, cutoff: 4600,
+    base: 65, scale: 'major6', reverb: 0.34, gain: 0.38, detune: 3
+  }
+};
+
+/* Deterministic per-chunk hash — same stream always yields the same pitches,
+   so a voice A/B is honest. No Math.random anywhere in this module. */
+function hash(str, i) {
+  let h = 2166136261 ^ i;
+  for (let k = 0; k < str.length; k++) { h ^= str.charCodeAt(k); h = Math.imul(h, 16777619); }
+  return (h >>> 0) / 4294967296;
+}
+
+const PITCH_DRIVERS = {
+  walk:  { label: 'Gentle walk',   fn: function (s, c, i) { const up = hash(c.text, i) > 0.44;
+             return Math.max(0, Math.min(13, s.degree + (up ? 1 : -1))); } },
+  size:  { label: 'Chunk size',    fn: function (s, c) { return Math.min(13, Math.floor(c.chars / 3)); } },
+  hash:  { label: 'Text (random)', fn: function (s, c, i) { return Math.floor(hash(c.text, i) * 14); } },
+  still: { label: 'Almost still',  fn: function (s, c, i) { const r = hash(c.text, i);
+             return r > 0.82 ? 2 : (r < 0.14 ? 1 : 0); } }
+};
+
+function degreeToMidi(degree, scaleId, base, transpose) {
+  const steps = SCALES[scaleId].steps, n = steps.length;
+  const oct = Math.floor(degree / n);
+  return base + transpose + steps[((degree % n) + n) % n] + 12 * oct;
+}
+
+/* THE MAPPING — settled as Direct: exactly one note per chunk, at the moment it lands. */
+function directMapping(state, chunk, now, p) {
+  const v = VOICES[p.voice];
+  const degree = PITCH_DRIVERS[p.driver].fn(state, chunk, state.count);
+  const midi = degreeToMidi(degree, p.scale, v.base, p.transpose);
+  const gap = now - state.last;
+  // politeness: back-to-back hits in a burst thin out so a flood stays pleasant
+  let gain = v.gain;
+  if (p.duck && gap < 0.09) gain *= 0.5;
+  else if (p.duck && gap < 0.18) gain *= 0.75;
+  if (chunk.endsSentence) gain *= 1.15;
+  return {
+    state: { degree: degree, count: state.count + 1, last: now },
+    notes: [{ atSec: now, midi: midi, gain: gain, voice: p.voice,
+              bright: chunk.isCode ? 1.6 : 1 }]
+  };
+}
+function mappingInit() { return { degree: 0, count: 0, last: -99 }; }
+
+function endNotes(now, p) {
+  const v = VOICES[p.voice];
+  return [0, 2, 4].map(function (d, i) {
+    return { atSec: now + i * 0.09, midi: degreeToMidi(d + 5, p.scale, v.base, p.transpose),
+             gain: v.gain * (0.85 - i * 0.12), voice: p.voice, bright: 1 };
+  });
+}
+function abortNotes(now, p) {
+  const v = VOICES[p.voice];
+  return [{ atSec: now, midi: degreeToMidi(0, p.scale, v.base, p.transpose) - 12,
+            gain: v.gain * 0.9, voice: p.voice, bright: 0.55 }];
+}
+
+/* Seeded fake stream — identical cadence on every replay. */
+function mulberry32(a) {
+  return function () { a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function planStream(text, seed, pauseChance) {
+  const rnd = mulberry32(seed), words = text.split(/(\s+)/).filter(function (w) { return w.length; });
+  const plan = []; let i = 0, inCode = false, delay = 420;
+  while (i < words.length) {
+    const take = 2 + Math.floor(rnd() * 7), piece = words.slice(i, i + take).join(''); i += take;
+    const fences = (piece.match(/```/g) || []).length, isCode = inCode || fences > 0;
+    if (fences % 2 === 1) inCode = !inCode;
+    plan.push({ delayMs: delay, text: piece, chars: piece.length, isCode: isCode,
+                endsSentence: /[.!?][")\s]*$/.test(piece) });
+    delay = 18 + rnd() * 70;
+    if (rnd() < pauseChance) delay += 260 + rnd() * 700;
+  }
+  return plan;
+}
+
+/* ============================================================================
+   THROWAWAY SHELL — synth, fake stream player, page.
+   ========================================================================== */
+
+const ac = new (window.AudioContext || window.webkitAudioContext)();
+const master = ac.createGain(); master.gain.value = 0.8; master.connect(ac.destination);
+const dry = ac.createGain(); dry.connect(master);
+const verbSend = ac.createGain(); verbSend.gain.value = 1;
+const verb = ac.createConvolver();
+(function () {                              // procedural hall impulse
+  const len = ac.sampleRate * 2.4, b = ac.createBuffer(2, len, ac.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = b.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6);
+  }
+  verb.buffer = b;
+})();
+const verbOut = ac.createGain(); verbOut.gain.value = 0.9;
+verbSend.connect(verb); verb.connect(verbOut); verbOut.connect(master);
+
+const params = { voice: 'kalimba', scale: 'majorPent', transpose: 0, reverb: 0.32,
+                 driver: 'walk', duck: true };
+let mState = mappingInit();
+const stats = { chunks: 0, notes: 0, gap: 0 };
+
+function applyVoiceDefaults(id) {
+  const v = VOICES[id];
+  params.voice = id; params.scale = v.scale; params.reverb = v.reverb;
+  syncKnobs();
+}
+
+function playNote(n) {
+  const v = VOICES[n.voice], t = Math.max(n.atSec, ac.currentTime + 0.001);
+  const out = ac.createGain(); out.gain.value = 1;
+  const lp = ac.createBiquadFilter(); lp.type = 'lowpass';
+  lp.frequency.value = v.cutoff * n.bright;
+  out.connect(lp);
+  const send = ac.createGain(); send.gain.value = params.reverb;
+  lp.connect(dry); lp.connect(send); send.connect(verbSend);
+
+  v.partials.forEach(function (p, idx) {
+    const o = ac.createOscillator(); o.type = v.wave;
+    o.frequency.value = 440 * Math.pow(2, (n.midi - 69) / 12) * p[0];
+    if (v.detune) o.detune.value = (idx % 2 ? v.detune : -v.detune);
+    const g = ac.createGain();
+    const peak = Math.max(0.0002, n.gain * p[1]);
+    const dec = v.decay * (idx === 0 ? 1 : 0.65);   // partials fade faster — sounds natural
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + v.attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + v.attack + dec);
+    o.connect(g); g.connect(out);
+    o.start(t); o.stop(t + v.attack + dec + 0.05);
+  });
+  stats.notes++;
+}
+
+let queue = [];
+setInterval(function () {
+  const horizon = ac.currentTime + 0.12, due = [], rest = [];
+  queue.forEach(function (n) { (n.atSec < horizon ? due : rest).push(n); });
+  queue = rest; due.forEach(playNote);
+  if (due.length) render();
+}, 25);
+
+/* --- fake stream player --- */
+let timer = null, plan = [], planIdx = 0, streaming = false, lastPlan = null;
+
+function resetStream() {
+  clearTimeout(timer); timer = null; streaming = false; queue = [];
+  stats.chunks = 0; stats.notes = 0; stats.gap = 0;
+  mState = mappingInit(); transcript.textContent = '';
+}
+function startStream(text, seed, pauseChance, label) {
+  resetStream();
+  plan = planStream(text, seed, pauseChance);
+  lastPlan = { text: text, seed: seed, pauseChance: pauseChance, label: label };
+  planIdx = 0; streaming = true;
+  say('<b>' + label + '</b> — the model is thinking…');
+  step();
+}
+function step() {
+  if (planIdx >= plan.length) return finish(false);
+  const c = plan[planIdx++];
+  timer = setTimeout(function () {
+    const now = ac.currentTime;
+    stats.gap = Math.round(c.delayMs);
+    const r = directMapping(mState, c, now, params);
+    mState = r.state; queue = queue.concat(r.notes);
+    stats.chunks++;
+    const span = document.createElement('span');
+    if (c.isCode) span.className = 'code';
+    span.textContent = c.text;
+    transcript.appendChild(span);
+    transcript.scrollTop = transcript.scrollHeight;
+    say('Chunk ' + stats.chunks + ' — <b>' + c.chars + ' chars</b>' + (c.isCode ? ', code' : '') +
+        ' · ' + Math.round(c.delayMs) + 'ms gap · scale degree ' + r.state.degree);
+    render(); step();
+  }, c.delayMs);
+}
+function finish(aborted) {
+  clearTimeout(timer); timer = null;
+  if (!streaming) return;
+  const now = ac.currentTime;
+  queue = queue.concat(aborted ? abortNotes(now, params) : endNotes(now, params));
+  streaming = false;
+  say(aborted ? '<b>Stopped by the user</b> — that is the abort sound.'
+              : '<b>Response complete</b> — that is the closing flourish.');
+  render();
+}
+
+/* --- page --- */
+const $ = function (id) { return document.getElementById(id); };
+const transcript = $('transcript');
+function say(h) { $('lastEvent').innerHTML = h; }
+
+Object.keys(VOICES).forEach(function (id) {
+  const b = document.createElement('button');
+  b.dataset.voice = id;
+  b.innerHTML = '<b>' + VOICES[id].label + '</b><span>' + VOICES[id].blurb + '</span>';
+  b.onclick = function () {
+    applyVoiceDefaults(id);
+    document.querySelectorAll('[data-voice]').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    say('Voice: <b>' + VOICES[id].label + '</b>' + (streaming ? ' — switched mid-stream' : ''));
+    render();
+  };
+  $('voicePicker').appendChild(b);
+});
+
+const KNOBS = [
+  { id: 'scale', label: 'Scale colour', type: 'select',
+    options: Object.keys(SCALES).map(function (k) { return [k, SCALES[k].label]; }) },
+  { id: 'driver', label: 'What moves the pitch', type: 'select',
+    options: Object.keys(PITCH_DRIVERS).map(function (k) { return [k, PITCH_DRIVERS[k].label]; }) },
+  { id: 'transpose', label: 'Register', type: 'range', min: -24, max: 24, step: 1 },
+  { id: 'reverb', label: 'Reverb tail', type: 'range', min: 0, max: 100, step: 1, scale100: true },
+  { id: 'duck', label: 'Thin out fast bursts', type: 'select', options: [['on', 'On'], ['off', 'Off']] }
+];
+KNOBS.forEach(function (k) {
+  const d = document.createElement('div'); d.className = 'knob';
+  let inner = '<label for="k-' + k.id + '">' + k.label + '</label>';
+  if (k.type === 'select') {
+    inner += '<select id="k-' + k.id + '">' + k.options.map(function (o) {
+      return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join('') + '</select>';
+  } else {
+    inner += '<input type="range" id="k-' + k.id + '" min="' + k.min + '" max="' + k.max +
+             '" step="' + k.step + '" />';
+  }
+  d.innerHTML = inner; $('knobs').appendChild(d);
+  const el = $('k-' + k.id);
+  el.oninput = el.onchange = function () {
+    if (k.id === 'duck') params.duck = el.value === 'on';
+    else if (k.scale100) params[k.id] = Number(el.value) / 100;
+    else params[k.id] = k.type === 'range' ? Number(el.value) : el.value;
+    render();
+  };
+});
+function syncKnobs() {
+  $('k-scale').value = params.scale;
+  $('k-driver').value = params.driver;
+  $('k-transpose').value = params.transpose;
+  $('k-reverb').value = Math.round(params.reverb * 100);
+  $('k-duck').value = params.duck ? 'on' : 'off';
+}
+
+const SAMPLES = {
+  prose: 'Yes, that approach works well. The key idea is that the browser only lets you play audio after a real click, so you unlock the audio engine on the first interaction. After that, every piece of arriving text can trigger a note without asking again. The tricky part is character, because a sound you hear a thousand times a day has to stay pleasant.',
+  code: 'Here is the observer you need. ```js const obs = new MutationObserver(function (records) { for (const r of records) onChunk(r); }); obs.observe(node, { childList: true, subtree: true }); ``` That covers the streaming case on both sites.',
+  short: 'Three options here. Quantize every chunk, buffer and drain it, or leave it raw. Raw won.',
+  long: 'Streaming responses feel dead because nothing marks their passage except text. Sound changes that. A short note per burst tells you the model is alive, and the density of notes tells you how fast it is going. When the model pauses to think, the silence is information too. If you push this further, the shape of an answer becomes audible before you read a word of it, which is strange and rather lovely. The risk is fatigue, so the voice has to survive a very long answer without becoming irritating, and that is the real test of this prototype. Listen past the novelty of the first few notes and ask whether the tenth answer of the day would still be welcome.'
+};
+const FREE = [
+  ['Ordinary reply', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply'); }],
+  ['Bursty, with thinking pauses', function () { startStream(SAMPLES.short, 23, 0.45, 'Bursty reply'); }],
+  ['Reply with a code block', function () { startStream(SAMPLES.code, 7, 0.1, 'Code block reply'); }],
+  ['Long answer (fatigue test)', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+  ['Fast flood, no pauses', function () { startStream(SAMPLES.long, 5, 0, 'Fast flood'); }],
+  ['Press stop mid-answer', function () { finish(true); }],
+  ['↺ Replay that exact stream', function () {
+      if (!lastPlan) return say('Run a stream first, then replay it with another voice.');
+      startStream(lastPlan.text, lastPlan.seed, lastPlan.pauseChance, lastPlan.label + ' (replay)'); }],
+  ['Silence', function () { resetStream(); say('Reset.'); render(); }]
+];
+FREE.forEach(function (p) {
+  const b = document.createElement('button'); b.textContent = p[0]; b.onclick = p[1];
+  $('freePlay').appendChild(b);
+});
+
+function render() {
+  const v = VOICES[params.voice];
+  const all = {
+    'Voice': v.label,
+    'Scale': SCALES[params.scale].label,
+    'Pitch by': PITCH_DRIVERS[params.driver].label,
+    'Register': (params.transpose >= 0 ? '+' : '') + params.transpose + ' st',
+    'Reverb': Math.round(params.reverb * 100) + '%',
+    'Stream': streaming ? 'streaming…' : 'idle',
+    'Chunks': stats.chunks,
+    'Notes': stats.notes,
+    'Last gap': stats.gap + 'ms'
+  };
+  $('statePanel').innerHTML = Object.keys(all).map(function (k) {
+    return '<div><dt>' + k + '</dt><dd>' + all[k] + '</dd></div>'; }).join('');
+  $('recipe').textContent =
+    'If this is the winner, this is the recipe to record on the ticket:\n' +
+    'voice: ' + params.voice + '   scale: ' + params.scale + '   pitchDriver: ' + params.driver +
+    '\ntranspose: ' + params.transpose + '   reverb: ' + params.reverb.toFixed(2) +
+    '   thinBursts: ' + (params.duck ? 'on' : 'off') +
+    '\nattack: ' + v.attack + 's   decay: ' + v.decay + 's   partials: ' +
+    JSON.stringify(v.partials);
+}
+
+/* --- guided walkthroughs --- */
+function pickVoice(id) {
+  document.querySelector('[data-voice="' + id + '"]').click();
+}
+function setKnob(id, val) {
+  const el = $('k-' + id); el.value = val; el.onchange();
+}
+const SCENARIOS = [
+  { name: '1 · Is warmer actually better?',
+    desc: 'Start where we are. Play an ordinary reply on the current <b>Soft pluck</b>, then the identical stream on <b>Kalimba</b>. The structure is byte-for-byte the same — only the timbre moved.',
+    steps: [['Use Soft pluck (today’s sound)', function () { pickVoice('pluck'); }],
+            ['Play an ordinary reply', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply'); }],
+            ['Switch to Kalimba', function () { pickVoice('kalimba'); }],
+            ['Replay the same stream', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply (replay)'); }]] },
+  { name: '2 · Soothing candidates',
+    desc: 'The two most calming voices, on a long answer. <b>Music box</b> is high and nostalgic; <b>Glass</b> blooms slowly with a wide tail. Listen for which one blurs into mush when chunks come fast.',
+    steps: [['Use Music box', function () { pickVoice('musicbox'); }],
+            ['Play a long answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+            ['Switch to Glass', function () { pickVoice('glass'); }],
+            ['Replay the same long answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer (replay)'); }]] },
+  { name: '3 · Upbeat candidates',
+    desc: '<b>Marimba</b> is dry, short and percussive; <b>Rhodes</b> is sweeter and blooms a little. Bursty text is where upbeat voices either sparkle or get busy.',
+    steps: [['Use Marimba', function () { pickVoice('marimba'); }],
+            ['Play a bursty reply', function () { startStream(SAMPLES.short, 23, 0.45, 'Bursty reply'); }],
+            ['Switch to Rhodes', function () { pickVoice('rhodes'); }],
+            ['Replay the same bursty reply', function () { startStream(SAMPLES.short, 23, 0.45, 'Bursty reply (replay)'); }]] },
+  { name: '4 · Where "upbeat" really comes from',
+    desc: 'Mood lives in the scale more than the instrument. Same voice throughout — only the scale colour changes. Minor pentatonic is the melancholy one we have now; major pentatonic is bright; lydian is dreamy and floating.',
+    steps: [['Use Kalimba', function () { pickVoice('kalimba'); }],
+            ['Set the melancholy scale', function () { setKnob('scale', 'minorPent'); }],
+            ['Play an ordinary reply', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply'); }],
+            ['Switch to bright (major pentatonic)', function () { setKnob('scale', 'majorPent'); }],
+            ['Replay it', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply (replay)'); }],
+            ['Switch to dreamy (lydian)', function () { setKnob('scale', 'lydian'); }],
+            ['Replay it once more', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply (replay)'); }]] },
+  { name: '5 · The fatigue test',
+    desc: 'The one that decides it. A fast flood with no pauses, on your favourite so far — first with bursts thinned out, then without. If a voice is going to become irritating, it happens here.',
+    steps: [['Play a fast flood', function () { startStream(SAMPLES.long, 5, 0, 'Fast flood'); }],
+            ['Turn burst-thinning off', function () { setKnob('duck', 'off'); }],
+            ['Replay the flood', function () { startStream(SAMPLES.long, 5, 0, 'Fast flood (replay)'); }],
+            ['Turn it back on', function () { setKnob('duck', 'on'); }],
+            ['Replay one more time', function () { startStream(SAMPLES.long, 5, 0, 'Fast flood (replay)'); }]] },
+  { name: '6 · Pitch movement, endings, code',
+    desc: 'Three smaller calls. How much the pitch should wander (a gentle walk feels melodic; <b>almost still</b> feels like a texture), whether the code timbre shift lands, and how the ending and abort sounds feel in your chosen voice.',
+    steps: [['Play a reply with code (gentle walk)', function () { setKnob('driver', 'walk'); startStream(SAMPLES.code, 7, 0.1, 'Code reply'); }],
+            ['Switch to almost still', function () { setKnob('driver', 'still'); }],
+            ['Replay the code reply', function () { startStream(SAMPLES.code, 7, 0.1, 'Code reply (replay)'); }],
+            ['Play a short reply, let it finish', function () { startStream(SAMPLES.short, 23, 0.08, 'Short reply'); }],
+            ['Start a long one', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+            ['Press stop now', function () { finish(true); }]] }
+];
+
+let scen = 0, stepIdx = 0;
+SCENARIOS.forEach(function (s, i) {
+  const b = document.createElement('button'); b.textContent = s.name;
+  b.onclick = function () { scen = i; stepIdx = 0; resetStream(); renderScenario(); };
+  $('tabs').appendChild(b);
+});
+function renderScenario() {
+  const s = SCENARIOS[scen];
+  Array.prototype.forEach.call($('tabs').children, function (b, i) { b.classList.toggle('on', i === scen); });
+  $('scenDesc').innerHTML = s.desc;
+  $('scenSteps').innerHTML = '';
+  s.steps.forEach(function (st, i) {
+    const b = document.createElement('button');
+    b.className = 'step' + (i < stepIdx ? ' done' : '') + (i === stepIdx ? ' next' : '');
+    b.textContent = (i + 1) + '. ' + st[0];
+    b.onclick = function () { st[1](); stepIdx = i + 1; renderScenario(); };
+    $('scenSteps').appendChild(b);
+  });
+  render();
+}
+
+document.querySelector('[data-voice="kalimba"]').classList.add('on');
+syncKnobs();
+renderScenario();
+render();
+
+$('unlock').onclick = function () { ac.resume(); $('unlock').style.display = 'none'; };
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PROTOTYPE — Music to My Agents: sound mappings</title>
+<style>
+  :root {
+    --bg: #0e0f13;
+    --panel: #16181f;
+    --panel-2: #1d202a;
+    --line: #2a2e3a;
+    --text: #e7e9ee;
+    --dim: #949aab;
+    --accent: #7cf5c4;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 24px 96px;
+    background: var(--bg); color: var(--text);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.09em;
+       color: var(--dim); font-weight: 600; margin: 40px 0 14px; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: .08em;
+         text-transform: uppercase; color: #0e0f13; background: var(--accent);
+         padding: 3px 8px; border-radius: 4px; font-weight: 700; margin-bottom: 14px; }
+  .lede { color: var(--dim); max-width: 66ch; margin: 0 0 4px; }
+  .lede strong { color: var(--text); font-weight: 600; }
+  .panel { background: var(--panel); border: 1px solid var(--line);
+           border-radius: 12px; padding: 18px 20px; }
+  button {
+    font: inherit; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 14px; cursor: pointer; text-align: left;
+  }
+  button:hover { border-color: #3d4354; background: #232734; }
+  button:disabled { opacity: .35; cursor: default; }
+  button.on { background: var(--accent); color: #0e0f13; border-color: var(--accent); font-weight: 600; }
+  button.step { display: block; width: 100%; margin-bottom: 8px; }
+  button.step.done { opacity: .45; }
+  button.next { border-color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .grid5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  .map-btn b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .map-btn span { display: block; font-size: 12px; line-height: 1.4; opacity: .75; }
+  .state { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px 20px; }
+  .state div { min-width: 0; }
+  .state dt { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--dim); }
+  .state dd { margin: 2px 0 0; font-size: 16px; font-variant-numeric: tabular-nums;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .changed { color: var(--accent); }
+  .last { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line);
+          font-size: 13px; color: var(--dim); min-height: 22px; }
+  .last b { color: var(--text); font-weight: 500; }
+  #transcript { margin-top: 14px; padding: 14px 16px; background: #0b0c10;
+                border: 1px solid var(--line); border-radius: 8px;
+                min-height: 92px; max-height: 200px; overflow-y: auto;
+                white-space: pre-wrap; font-size: 13.5px; color: #c7ccd8; }
+  #transcript .code { font-family: ui-monospace, monospace; color: var(--accent); }
+  .cursor { display: inline-block; width: 7px; height: 15px; background: var(--accent);
+            vertical-align: -2px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tabs button { padding: 7px 12px; font-size: 13.5px; }
+  .scen-desc { color: var(--dim); font-size: 14px; margin: 0 0 14px; max-width: 68ch; }
+  .scen-desc b { color: var(--text); font-weight: 600; }
+  #unlock { position: fixed; inset: 0; background: rgba(14,15,19,.94);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 10px; cursor: pointer; z-index: 10; }
+  #unlock p { color: var(--dim); margin: 0; }
+  .vol { display: flex; align-items: center; gap: 10px; color: var(--dim); font-size: 13px; }
+  input[type=range] { accent-color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="unlock">
+  <h1>Click anywhere to enable sound</h1>
+  <p>Browsers only allow audio after a real click — the same unlock the extension will use.</p>
+</div>
+
+<div class="wrap">
+  <span class="tag">Prototype — throwaway</span>
+  <h1>What should a streaming response sound like?</h1>
+  <p class="lede">
+    Text from an LLM does not arrive one tidy token at a time — it lands in <strong>bursts</strong>,
+    with pauses while the model thinks. This page fakes that arrival exactly and plays five
+    candidate <strong>mappings</strong> from arriving text to music, so the question
+    "which of these is actually delightful rather than chaotic?" can be settled by ear
+    instead of on paper. Pick a mapping, run a stream, then run the <em>same</em> stream
+    under a different mapping and compare.
+  </p>
+
+  <h2>Sound mapping — switch any time, even mid-stream</h2>
+  <div class="grid5" id="mapPicker"></div>
+
+  <h2>What's happening right now</h2>
+  <div class="panel">
+    <dl class="state" id="statePanel"></dl>
+    <div class="last" id="lastEvent">Nothing yet — start a stream below.</div>
+    <div id="transcript"></div>
+  </div>
+
+  <h2>Free play — press anything, any order</h2>
+  <div class="row" id="freePlay"></div>
+  <div class="row" style="margin-top:14px; align-items:center; justify-content:space-between">
+    <div class="vol">
+      <label for="vol">Volume</label>
+      <input type="range" id="vol" min="0" max="100" value="70" />
+    </div>
+    <div class="vol" id="replayWrap"></div>
+  </div>
+
+  <h2>Guided walkthroughs — the awkward cases</h2>
+  <div class="tabs" id="tabs"></div>
+  <div class="panel">
+    <p class="scen-desc" id="scenDesc"></p>
+    <div id="scenSteps"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================================
+   PURE MODULE — the bit worth keeping.
+   Maps a stream of arriving text Chunks onto musical Notes. No DOM, no audio,
+   no timers: every function takes (state, chunk/slot, timeInSeconds) and returns
+   { state, notes }. Lifts straight into the extension once a winner is picked.
+   ========================================================================== */
+
+const PENTATONIC = [0, 3, 5, 7, 10];   // minor pentatonic — never sounds wrong
+const ROOT = 57;                        // A3
+const BPM = 108;
+const STEP = 60 / BPM / 4;              // one 16th note, in seconds
+
+// degree -> midi, wrapping up through octaves
+function deg2midi(degree, root) {
+  const n = PENTATONIC.length;
+  const oct = Math.floor(degree / n);
+  return (root === undefined ? ROOT : root) + PENTATONIC[((degree % n) + n) % n] + 12 * oct;
+}
+function note(atSec, midi, dur, gain, voice) {
+  return { atSec: atSec, midi: midi, dur: dur, gain: gain, voice: voice };
+}
+// next slot on the shared 16th grid, at or after `from`
+function quantize(from, origin) {
+  return origin + Math.ceil((from - origin) / STEP - 1e-9) * STEP;
+}
+function flourish(now, root, voice) {
+  return [0, 2, 4, 5].map(function (d, i) {
+    return note(now + i * STEP, deg2midi(d + 5, root), 0.5, 0.3 - i * 0.03, voice);
+  });
+}
+const ABORT = function (now) { return [note(now, ROOT - 12, 0.35, 0.4, 'bass')]; };
+
+const Mappings = {
+
+  /* 1. The naive baseline: one note the instant text lands. */
+  direct: {
+    label: 'Direct',
+    blurb: 'A note the moment each chunk lands. No smoothing — the honest baseline.',
+    init: function (now) { return { origin: now, notes: 0 }; },
+    onChunk: function (s, chunk, now) {
+      const midi = deg2midi(chunk.chars % 9, ROOT);
+      return { state: { origin: s.origin, notes: s.notes + 1 },
+               notes: [note(now, midi, 0.16, 0.42, chunk.isCode ? 'square' : 'pluck')] };
+    },
+    onEnd: function (s, now) { return { state: s, notes: flourish(now, ROOT, 'pluck') }; },
+    onAbort: function (s, now) { return { state: s, notes: ABORT(now) }; },
+    summary: function (s) { return { 'Notes fired': s.notes }; }
+  },
+
+  /* 2. Same events, snapped to a tempo grid — chaos becomes rhythm. */
+  quantized: {
+    label: 'Quantized',
+    blurb: 'Chunks snap to a 16th-note grid in a pentatonic scale. Bursts become runs; pauses become rests.',
+    init: function (now) { return { origin: now, lastSlot: -1, degree: 0, dir: 1, slots: 0 }; },
+    onChunk: function (s, chunk, now) {
+      let slot = quantize(Math.max(now, s.lastSlot + STEP), s.origin);
+      const idx = Math.round((slot - s.origin) / STEP);
+      let dir = chunk.chars > 14 ? 1 : (chunk.chars < 6 ? -1 : s.dir);
+      let degree = s.degree + dir;
+      if (degree > 11) { degree = 11; dir = -1; }
+      if (degree < 0) { degree = 0; dir = 1; }
+      const out = [note(slot, deg2midi(degree, ROOT), 0.22, 0.36,
+                        chunk.isCode ? 'square' : 'pluck')];
+      if (chunk.endsSentence) out.push(note(slot, deg2midi(degree + 5, ROOT), 0.9, 0.22, 'bell'));
+      if (idx % 8 === 0) out.push(note(slot, ROOT - 12, 0.5, 0.3, 'bass'));
+      return { state: { origin: s.origin, lastSlot: slot, degree: degree, dir: dir, slots: s.slots + 1 },
+               notes: out };
+    },
+    onEnd: function (s, now) {
+      return { state: s, notes: flourish(quantize(now, s.origin), ROOT, 'bell') };
+    },
+    onAbort: function (s, now) { return { state: s, notes: ABORT(now) }; },
+    summary: function (s) { return { 'Grid notes': s.slots, 'Scale degree': s.degree }; }
+  },
+
+  /* 3. Text fills a buffer; a steady arpeggio drains it. Volume of text = length of run. */
+  drain: {
+    label: 'Arpeggio drain',
+    blurb: 'Arriving text fills a buffer that a steady arpeggio drains. Fast streams play longer runs; silence means it caught up.',
+    init: function (now) { return { origin: now, pending: 0, arp: 0, drained: 0 }; },
+    onChunk: function (s, chunk, now) {
+      return { state: Object.assign({}, s, { pending: s.pending + chunk.chars }), notes: [] };
+    },
+    tick: function (s, slot) {
+      if (s.pending <= 0) return { state: s, notes: [] };
+      const gain = 0.2 + Math.min(0.28, s.pending / 260);
+      const out = [note(slot, deg2midi(s.arp, ROOT), 0.24, gain, 'pluck')];
+      if (s.arp % 8 === 0) out.push(note(slot, ROOT - 12, 0.45, 0.26, 'bass'));
+      return { state: Object.assign({}, s, {
+        pending: Math.max(0, s.pending - 7), arp: s.arp + 1, drained: s.drained + 1
+      }), notes: out };
+    },
+    onEnd: function (s, now) {
+      return { state: s, notes: flourish(quantize(now, s.origin), ROOT, 'pluck') };
+    },
+    onAbort: function (s, now) {
+      return { state: Object.assign({}, s, { pending: 0 }), notes: ABORT(now) };
+    },
+    summary: function (s) { return { 'Buffered chars': Math.round(s.pending), 'Notes drained': s.drained }; }
+  },
+
+  /* 4. Long soft chords that move only every ~90 characters. Built for 2000-word answers. */
+  ambient: {
+    label: 'Ambient pad',
+    blurb: 'Slow sustained chords that shift every ~90 characters. Meant to survive a very long answer without fatigue.',
+    init: function (now) { return { origin: now, acc: 0, chord: 0, changes: 0 }; },
+    onChunk: function (s, chunk, now) {
+      let acc = s.acc + chunk.chars, chord = s.chord, changes = s.changes, out = [];
+      if (acc >= 90) {
+        acc -= 90; chord = (chord + 2) % 10; changes++;
+        out = [0, 2, 4].map(function (i) {
+          return note(now, deg2midi(chord + i, ROOT), 3.2, 0.16, 'pad');
+        });
+        out.push(note(now, ROOT - 12, 3.2, 0.18, 'pad'));
+      }
+      if (chunk.endsSentence) out.push(note(now, deg2midi(chord + 7, ROOT), 1.4, 0.1, 'bell'));
+      return { state: { origin: s.origin, acc: acc, chord: chord, changes: changes }, notes: out };
+    },
+    onEnd: function (s, now) {
+      return { state: s, notes: [0, 2, 4, 7].map(function (i) {
+        return note(now, deg2midi(i, ROOT), 4, 0.15, 'pad');
+      }) };
+    },
+    onAbort: function (s, now) { return { state: s, notes: ABORT(now) }; },
+    summary: function (s) { return { 'Chord changes': s.changes, 'Chars to next': 90 - Math.round(s.acc) }; }
+  },
+
+  /* 5. The cheap sound-pack sanity check: no music at all. */
+  typewriter: {
+    label: 'Typewriter',
+    blurb: 'No music — mechanical clicks, rate-limited, with a carriage bell at the end of each sentence.',
+    init: function (now) { return { origin: now, last: -1, clicks: 0, bells: 0 }; },
+    onChunk: function (s, chunk, now) {
+      if (now - s.last < 0.055) return { state: s, notes: [] };
+      const out = [note(now, 68 + (chunk.chars % 5), 0.05, 0.5, 'noise')];
+      let bells = s.bells;
+      if (chunk.endsSentence) { out.push(note(now + 0.04, 96, 0.7, 0.22, 'bell')); bells++; }
+      return { state: { origin: s.origin, last: now, clicks: s.clicks + 1, bells: bells }, notes: out };
+    },
+    onEnd: function (s, now) {
+      return { state: s, notes: [note(now, 96, 0.9, 0.25, 'bell'), note(now, 50, 0.25, 0.3, 'noise')] };
+    },
+    onAbort: function (s, now) { return { state: s, notes: ABORT(now) }; },
+    summary: function (s) { return { 'Clicks': s.clicks, 'Carriage bells': s.bells }; }
+  }
+};
+
+/* Deterministic fake stream — same seed replays the exact same cadence,
+   which is what makes an honest A/B possible. */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function planStream(text, seed, pauseChance) {
+  const rnd = mulberry32(seed);
+  const words = text.split(/(\s+)/).filter(function (w) { return w.length; });
+  const plan = [];
+  let i = 0, inCode = false, delay = 420;
+  while (i < words.length) {
+    const take = 2 + Math.floor(rnd() * 7);
+    const piece = words.slice(i, i + take).join('');
+    i += take;
+    const fences = (piece.match(/```/g) || []).length;
+    const isCode = inCode || fences > 0;
+    if (fences % 2 === 1) inCode = !inCode;
+    plan.push({
+      delayMs: delay,
+      text: piece,
+      chars: piece.length,
+      isCode: isCode,
+      endsSentence: /[.!?][")\s]*$/.test(piece)
+    });
+    delay = 18 + rnd() * 70;
+    if (rnd() < pauseChance) delay += 260 + rnd() * 700;   // the model "thinks"
+  }
+  return plan;
+}
+
+/* ============================================================================
+   THROWAWAY SHELL — audio engine, fake stream player, page. Not for keeping.
+   ========================================================================== */
+
+const ac = new (window.AudioContext || window.webkitAudioContext)();
+const master = ac.createGain(); master.gain.value = 0.7;
+const delay = ac.createDelay(1.0); delay.delayTime.value = 0.28;
+const fb = ac.createGain(); fb.gain.value = 0.3;
+const wet = ac.createGain(); wet.gain.value = 0.22;
+delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+master.connect(ac.destination);
+
+const noiseBuf = (function () {
+  const b = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate);
+  const d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return b;
+})();
+const f = function (m) { return 440 * Math.pow(2, (m - 69) / 12); };
+
+function playNote(n) {
+  const t = Math.max(n.atSec, ac.currentTime + 0.001);
+  const g = ac.createGain();
+  g.connect(master); g.connect(delay);
+  let src;
+  if (n.voice === 'noise') {
+    src = ac.createBufferSource(); src.buffer = noiseBuf;
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass';
+    bp.frequency.value = f(n.midi) * 2; bp.Q.value = 1.4;
+    src.connect(bp); bp.connect(g);
+  } else {
+    src = ac.createOscillator();
+    src.type = n.voice === 'square' ? 'square' : (n.voice === 'pad' ? 'sawtooth'
+             : (n.voice === 'bass' ? 'sine' : (n.voice === 'bell' ? 'sine' : 'triangle')));
+    src.frequency.value = f(n.midi);
+    if (n.voice === 'pad' || n.voice === 'square') {
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass';
+      lp.frequency.value = n.voice === 'pad' ? 900 : 2200;
+      src.connect(lp); lp.connect(g);
+    } else src.connect(g);
+  }
+  const atk = n.voice === 'pad' ? 0.6 : 0.005;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, n.gain), t + atk);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + n.dur);
+  src.start(t); src.stop(t + n.dur + 0.05);
+  stats.played++;
+}
+
+/* --- scheduler: lookahead queue, exactly as the extension will do it --- */
+let queue = [];
+let mapId = 'quantized';
+let mState = Mappings[mapId].init(ac.currentTime);
+let nextTick = null;          // grid pointer for tick-based mappings
+let streaming = false;
+const stats = { chunks: 0, chars: 0, played: 0 };
+
+setInterval(function () {
+  const horizon = ac.currentTime + 0.15;
+  const m = Mappings[mapId];
+  if (streaming && m.tick) {
+    if (nextTick === null) nextTick = ac.currentTime;
+    while (nextTick < horizon) {
+      const r = m.tick(mState, nextTick);
+      mState = r.state; queue = queue.concat(r.notes);
+      nextTick += STEP;
+    }
+  }
+  const due = [], rest = [];
+  queue.forEach(function (n) { (n.atSec < horizon ? due : rest).push(n); });
+  queue = rest;
+  due.forEach(playNote);
+  if (due.length) render();
+}, 25);
+
+function emit(res) { mState = res.state; queue = queue.concat(res.notes); }
+
+/* --- fake stream player --- */
+let timer = null, plan = [], planIdx = 0, lastPlan = null;
+
+function resetStream(now) {
+  clearTimeout(timer); timer = null;
+  streaming = false; queue = [];
+  stats.chunks = 0; stats.chars = 0; stats.played = 0;
+  mState = Mappings[mapId].init(now === undefined ? ac.currentTime : now);
+  nextTick = null;
+  transcript.textContent = '';
+}
+
+function startStream(text, seed, pauseChance, label) {
+  resetStream();
+  plan = planStream(text, seed, pauseChance);
+  lastPlan = { text: text, seed: seed, pauseChance: pauseChance, label: label };
+  planIdx = 0; streaming = true;
+  nextTick = ac.currentTime;
+  say('<b>' + label + '</b> — the model is thinking…');
+  step();
+}
+
+function step() {
+  if (planIdx >= plan.length) return finish(false);
+  const c = plan[planIdx++];
+  timer = setTimeout(function () {
+    const now = ac.currentTime;
+    emit(Mappings[mapId].onChunk(mState, c, now));
+    stats.chunks++; stats.chars += c.chars;
+    const span = document.createElement('span');
+    if (c.isCode) span.className = 'code';
+    span.textContent = c.text;
+    transcript.appendChild(span);
+    transcript.scrollTop = transcript.scrollHeight;
+    say('Chunk ' + stats.chunks + ' — <b>' + c.chars + ' chars</b>' +
+        (c.isCode ? ', code' : '') + (c.endsSentence ? ', ends a sentence' : '') +
+        ' · after a ' + Math.round(c.delayMs) + 'ms gap');
+    render();
+    step();
+  }, c.delayMs);
+}
+
+function finish(aborted) {
+  clearTimeout(timer); timer = null;
+  if (!streaming) return;
+  const now = ac.currentTime;
+  emit(aborted ? Mappings[mapId].onAbort(mState, now) : Mappings[mapId].onEnd(mState, now));
+  streaming = false; nextTick = null;
+  say(aborted ? '<b>Stopped by the user</b> — listen for the abort sound.'
+              : '<b>Response complete</b> — listen for the closing flourish.');
+  render();
+}
+
+/* --- page --- */
+const $ = function (id) { return document.getElementById(id); };
+const transcript = $('transcript');
+function say(html) { $('lastEvent').innerHTML = html; }
+
+Object.keys(Mappings).forEach(function (id) {
+  const m = Mappings[id];
+  const b = document.createElement('button');
+  b.className = 'map-btn' + (id === mapId ? ' on' : '');
+  b.innerHTML = '<b>' + m.label + '</b><span>' + m.blurb + '</span>';
+  b.onclick = function () {
+    mapId = id;
+    mState = Mappings[id].init(ac.currentTime);
+    nextTick = streaming ? ac.currentTime : null;
+    queue = [];
+    document.querySelectorAll('.map-btn').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    say('Switched to <b>' + m.label + '</b>' + (streaming ? ' mid-stream' : ''));
+    render();
+  };
+  $('mapPicker').appendChild(b);
+});
+
+const SAMPLES = {
+  prose: 'Yes, that approach works well. The key idea is that the browser only lets you play audio after a real click, so you unlock the audio engine on the first interaction. After that, every piece of arriving text can trigger a note without asking again. The tricky part is rhythm, because text does not arrive evenly.',
+  code: 'Here is the observer you need. ```js const obs = new MutationObserver(function (records) { for (const r of records) onChunk(r); }); obs.observe(node, { childList: true, subtree: true, characterData: true }); ``` That covers the streaming case on both sites.',
+  list: 'There are three options. First, quantize every chunk to a musical grid so bursts turn into runs. Second, buffer the text and drain it with a steady arpeggio. Third, ignore rhythm entirely and move a slow pad. Each one trades precision against calm.',
+  long: 'Streaming responses feel dead because nothing marks their passage except text. Sound changes that. A short note per burst tells you the model is alive, and the density of notes tells you how fast it is going. When the model pauses to think, the silence is information too. If you push this further, the shape of an answer becomes audible before you read a word of it, which is strange and rather lovely. The risk is fatigue, so any mapping has to survive a very long answer without becoming irritating, and that is the real test of this prototype.'
+};
+
+const FREE = [
+  ['Ordinary reply', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply'); }],
+  ['Bursty reply with thinking pauses', function () { startStream(SAMPLES.list, 23, 0.42, 'Bursty reply'); }],
+  ['Reply with a code block', function () { startStream(SAMPLES.code, 7, 0.1, 'Code block reply'); }],
+  ['Long essay answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+  ['Fast flood, no pauses', function () { startStream(SAMPLES.long, 5, 0, 'Fast flood'); }],
+  ['Press stop mid-answer', function () { finish(true); }],
+  ['Silence everything', function () { resetStream(); say('Reset.'); render(); }]
+];
+FREE.forEach(function (p) {
+  const b = document.createElement('button');
+  b.textContent = p[0]; b.onclick = p[1];
+  $('freePlay').appendChild(b);
+});
+(function () {
+  const b = document.createElement('button');
+  b.className = 'next';
+  b.textContent = '↺ Replay that exact stream with the current mapping';
+  b.onclick = function () {
+    if (!lastPlan) return say('Run a stream first, then replay it under another mapping.');
+    startStream(lastPlan.text, lastPlan.seed, lastPlan.pauseChance, lastPlan.label + ' (replay)');
+  };
+  $('replayWrap').appendChild(b);
+})();
+
+$('vol').oninput = function () { master.gain.value = this.value / 100; };
+
+function render() {
+  const m = Mappings[mapId];
+  const base = {
+    'Sound mapping': m.label,
+    'Stream': streaming ? 'streaming…' : 'idle',
+    'Chunks arrived': stats.chunks,
+    'Characters': stats.chars,
+    'Notes played': stats.played
+  };
+  const all = Object.assign(base, m.summary(mState));
+  $('statePanel').innerHTML = Object.keys(all).map(function (k) {
+    return '<div><dt>' + k + '</dt><dd>' + all[k] + '</dd></div>';
+  }).join('');
+}
+
+/* --- guided walkthroughs --- */
+const SCENARIOS = [
+  {
+    name: '1 · Does it sound musical at all?',
+    desc: 'The core question. Play an <b>ordinary reply</b> under the naive mapping, then the exact same stream quantized to a grid. Listen for whether the second one sounds like music or just faster beeping.',
+    steps: [
+      ['Use the Direct mapping', function () { pickMap('direct'); }],
+      ['Play an ordinary reply', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply'); }],
+      ['Switch to Quantized', function () { pickMap('quantized'); }],
+      ['Replay the same stream', function () { startStream(SAMPLES.prose, 11, 0.08, 'Ordinary reply (replay)'); }]
+    ]
+  },
+  {
+    name: '2 · Bursts and thinking pauses',
+    desc: 'The hard case: text arrives in clumps with long silences. Grid-snapping can lag behind a burst; the drain mapping turns the same burst into a run of notes. Listen for which one still feels connected to what you see arriving.',
+    steps: [
+      ['Use Quantized', function () { pickMap('quantized'); }],
+      ['Play a bursty reply', function () { startStream(SAMPLES.list, 23, 0.42, 'Bursty reply'); }],
+      ['Switch to Arpeggio drain', function () { pickMap('drain'); }],
+      ['Replay the same bursty reply', function () { startStream(SAMPLES.list, 23, 0.42, 'Bursty reply (replay)'); }]
+    ]
+  },
+  {
+    name: '3 · Does a code block sound different?',
+    desc: 'Code arrives as a wall of dense text. Every musical mapping switches timbre inside a fenced block — listen for whether that reads as <b>a change of material</b> or just noise.',
+    steps: [
+      ['Use Quantized', function () { pickMap('quantized'); }],
+      ['Play a reply with a code block', function () { startStream(SAMPLES.code, 7, 0.1, 'Code block reply'); }],
+      ['Try it as Typewriter instead', function () { pickMap('typewriter'); }],
+      ['Replay the code reply', function () { startStream(SAMPLES.code, 7, 0.1, 'Code block reply (replay)'); }]
+    ]
+  },
+  {
+    name: '4 · The fatigue test',
+    desc: 'The mapping has to survive a long answer. Play a long one on the busiest mapping, then the calmest. Ask yourself which one you would still tolerate on the tenth response of the day — that is the one that ships.',
+    steps: [
+      ['Use Arpeggio drain', function () { pickMap('drain'); }],
+      ['Play a long answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+      ['Switch to Ambient pad', function () { pickMap('ambient'); }],
+      ['Replay the long answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer (replay)'); }]
+    ]
+  },
+  {
+    name: '5 · Endings and interruptions',
+    desc: 'Every response ends, and some get stopped. Hear the <b>closing flourish</b> on a finished answer, then hit stop halfway and hear the abort sound. These are the two moments a user will notice most.',
+    steps: [
+      ['Use Quantized', function () { pickMap('quantized'); }],
+      ['Play a short reply and let it finish', function () { startStream(SAMPLES.list, 23, 0.08, 'Short reply'); }],
+      ['Start a long answer', function () { startStream(SAMPLES.long, 31, 0.12, 'Long answer'); }],
+      ['Press stop now', function () { finish(true); }]
+    ]
+  }
+];
+
+function pickMap(id) {
+  const buttons = document.querySelectorAll('.map-btn');
+  const idx = Object.keys(Mappings).indexOf(id);
+  buttons[idx].click();
+}
+
+let scen = 0, stepIdx = 0;
+SCENARIOS.forEach(function (s, i) {
+  const b = document.createElement('button');
+  b.textContent = s.name;
+  b.onclick = function () { scen = i; stepIdx = 0; resetStream(); renderScenario(); };
+  $('tabs').appendChild(b);
+});
+function renderScenario() {
+  const s = SCENARIOS[scen];
+  Array.prototype.forEach.call($('tabs').children, function (b, i) {
+    b.classList.toggle('on', i === scen);
+  });
+  $('scenDesc').innerHTML = s.desc;
+  $('scenSteps').innerHTML = '';
+  s.steps.forEach(function (st, i) {
+    const b = document.createElement('button');
+    b.className = 'step' + (i < stepIdx ? ' done' : '') + (i === stepIdx ? ' next' : '');
+    b.textContent = (i + 1) + '. ' + st[0];
+    b.onclick = function () { st[1](); stepIdx = i + 1; renderScenario(); };
+    $('scenSteps').appendChild(b);
+  });
+  render();
+}
+renderScenario();
+render();
+
+$('unlock').onclick = function () {
+  ac.resume();
+  $('unlock').style.display = 'none';
+};
+</script>
+</body>
+</html>
