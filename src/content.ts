@@ -2,6 +2,7 @@ import { whenUnlocked } from "./core/unlock";
 import { Sampler } from "./core/sampler";
 import { Engine } from "./core/engine";
 import { adapterFor } from "./adapters";
+import { DEFAULT_SITES } from "./sites";
 import { DEFAULT_INSTRUMENT_ID, getInstrument } from "./instruments";
 
 /**
@@ -23,7 +24,7 @@ const DEFAULTS: Settings = {
   // Never 100%: the first response after install sets the impression.
   volume: 0.6,
   instrument: DEFAULT_INSTRUMENT_ID,
-  sites: { claude: true, chatgpt: true },
+  sites: DEFAULT_SITES,
 };
 
 async function main(): Promise<void> {
