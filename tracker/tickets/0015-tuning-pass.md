@@ -27,8 +27,11 @@ The pass was split honestly: an agent cannot hear, so everything measurable was 
 
 **The harness**: `prototypes/tuning-harness.html`, built by `bun run build:harness` against the real mapping/sampler/engine/instruments (no copies). Replays both measured rates with the measured chunk-size distribution, code bursts, a heavy-flush button, endurance mode, per-instrument sliders (release, reverb, gainTrim, register offset) with a paste-ready `define(...)` snippet, mid-stream A/B switching, a level-check button, and a live active-tails readout. Serve from the repo root (`python3 -m http.server`), open `/prototypes/tuning-harness.html`.
 
-**Open for the ear session (the remaining half):**
-1. **The walk parks at the ceiling.** Carrying `degree` across streams + the reflecting top wall means long sessions sit ~1-2 octaves above `base`, up to +19 semitones past the sample ceiling for harp. Decide by ear: reset or decay `degree` between streams, narrow the walk, or keep the drift as character. This interacts with the new trims — retune after deciding.
-2. The three flagged releases (piano, sitar, harp) at chatgpt.com rates.
-3. Whether the walk-weighted trims actually sit level to the ear, harp especially.
-4. Found in passing: `StreamEndReason` is not threaded into the engine — an aborted stream plays the same rising flourish as a clean finish. The ticket asks for a distinct abort sound; still missing.
+**The ear session was replaced by defaults** (2026-08-19): the user, honestly, did not want to drive a tuning console ("idk how to work this"), so the open calls were made with defensible defaults and real usage is the test:
+
+1. The walk now **decays between replies** (degree halves on stream end) instead of parking at the ceiling — continuity kept, drift bounded.
+2. Trims take the **geometric mean** of the single-note and walk-weighted measurements, since the register now oscillates between the two. Harp's two measurements disagree by ~15dB, so its mean is the roughest compromise and the first suspect if anything sticks out.
+3. Piano/sitar/harp **releases shortened** (0.95/1.05/1.15) to keep tails near ~6 simultaneous voices at 6.6 chunks/sec.
+4. The abort-flourish gap stands as noted: no adapter emits "aborted" today, so threading the reason would be dead code. Revisit only if abort detection ever lands.
+
+The harness remains for anyone who ever wants the sliders. **Close condition: the user uses the extension normally and nothing annoys them.** If something does, the report "instrument X, site Y, what it felt like" is enough to act on.
