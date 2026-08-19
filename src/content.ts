@@ -1,4 +1,4 @@
-import { createUnlockedContext } from "./core/unlock";
+import { whenUnlocked } from "./core/unlock";
 import { Sampler } from "./core/sampler";
 import { Engine } from "./core/engine";
 import { adapterFor } from "./adapters";
@@ -31,8 +31,12 @@ async function main(): Promise<void> {
   if (!adapter) return;
 
   const settings = (await chrome.storage.sync.get(DEFAULTS)) as Settings;
+  console.log(`${LOG} armed on ${location.hostname} — click or type to start audio`);
 
-  const { ctx, ready } = createUnlockedContext();
+  // Everything audio-related waits for the gesture, so nothing is constructed
+  // that Chrome would complain about.
+  const ctx = await whenUnlocked();
+
   const master = ctx.createGain();
   master.gain.value = 0;
   master.connect(ctx.destination);
@@ -43,19 +47,13 @@ async function main(): Promise<void> {
   const engine = new Engine(ctx, sampler, instrument, master);
   engine.start();
 
-  const applyVolume = (s: Settings) => {
-    const enabled = s.sites[adapter.id] !== false && !s.muted;
-    engine.setVolume(enabled ? s.volume : 0);
+  const applyVolume = () => {
+    const enabled = settings.sites[adapter.id] !== false && !settings.muted;
+    engine.setVolume(enabled ? settings.volume : 0);
   };
 
-  // Audio cannot start before a real gesture; the user's own click or Enter to
-  // submit a prompt supplies it well before any text streams back. If none ever
-  // arrives we simply stay silent — no banner, no nag.
-  void ready.then(async () => {
-    await sampler.load(instrument);
-    applyVolume(settings);
-    console.log(`${LOG} ready — ${instrument.label} on ${adapter.id}`);
-  });
+  await sampler.load(instrument);
+  applyVolume();
 
   chrome.storage.onChanged.addListener((changes) => {
     if (changes.muted) settings.muted = changes.muted.newValue as boolean;
@@ -67,7 +65,7 @@ async function main(): Promise<void> {
       engine.setInstrument(instrument);
       void sampler.load(instrument);
     }
-    applyVolume(settings);
+    applyVolume();
   });
 
   adapter.start(
@@ -78,7 +76,7 @@ async function main(): Promise<void> {
     () => ctx.currentTime,
   );
 
-  console.log(`${LOG} watching ${location.hostname} via ${adapter.id} adapter`);
+  console.log(`${LOG} ready — ${instrument.label} on ${adapter.id}`);
 }
 
 void main();
