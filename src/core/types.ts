@@ -60,9 +60,14 @@ export interface InstrumentDefinition {
   readonly label: string;
   /** Sample filenames keyed by the MIDI note they were recorded at. */
   readonly samples: Readonly<Record<number, string>>;
+  /** Where this instrument sits — scale degree 0 maps to this MIDI note. */
   readonly base: number;
+  /** Scale degrees the pitch driver walks. Major pentatonic reads as upbeat. */
   readonly scale: readonly number[];
+  /** Reverb send, 0-1. Too much turns a fast stream to mush. */
   readonly reverb: number;
+  /** Envelope release in seconds; shortens the sample's natural tail. */
+  readonly release: number;
   /** Levels this instrument against the rest of the roster. */
   readonly gainTrim: number;
   readonly source: string;
