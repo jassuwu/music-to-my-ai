@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "music to my ai",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "your ai talks, this plays it. one note per chunk of the reply, nothing to configure.",
   "homepage_url": "https://music-to-my-ai.jass.gg",
   "permissions": ["storage"],
